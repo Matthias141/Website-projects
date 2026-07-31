@@ -6,31 +6,10 @@
 <title>EMMIT FENN — GODFORM</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{width:100%;height:100%}
-body{
-  width:100%;
-  height:100%;
-  background:#f0f0f0;
-  font-family:monospace;
-  touch-action:none;
-}
-canvas{
-  display:block;
-  width:100% !important;
-  height:100% !important;
-  position:fixed;
-  top:0;left:0;
-  touch-action:none;
-}
-#hud{
-  position:fixed;top:16px;left:50%;transform:translateX(-50%);
-  color:#111;font-size:11px;letter-spacing:4px;
-  pointer-events:none;z-index:50;white-space:nowrap;
-}
-#status{
-  position:fixed;bottom:12px;left:14px;color:#333;
-  font-size:10px;letter-spacing:1px;pointer-events:none;z-index:50;
-}
+html,body{width:100%;height:100%;overflow:hidden;background:#f0f0f0;font-family:monospace;touch-action:none}
+canvas{display:block;width:100%!important;height:100%!important;position:fixed;top:0;left:0;touch-action:none}
+#hud{position:fixed;top:16px;left:50%;transform:translateX(-50%);color:#111;font-size:11px;letter-spacing:4px;pointer-events:none;z-index:50;white-space:nowrap}
+#status{position:fixed;bottom:12px;left:14px;color:#333;font-size:10px;letter-spacing:1px;pointer-events:none;z-index:50}
 </style>
 </head>
 <body>
@@ -41,7 +20,9 @@ canvas{
 {
   "imports": {
     "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "gsap": "https://cdn.skypack.dev/gsap",
+    "gsap/ScrollTrigger": "https://cdn.skypack.dev/gsap/ScrollTrigger"
   }
 }
 </script>
@@ -49,107 +30,119 @@ canvas{
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const status = document.getElementById('status');
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-function vw() { return window.innerWidth; }
-function vh() {
-  return (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-}
-
-const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || vw() < 768;
+function vw(){ return window.innerWidth; }
+function vh(){ return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
 
-const camera = new THREE.PerspectiveCamera(45, vw() / vh(), 0.1, 100);
-camera.position.set(
-  isMobile ? 11 : 8.5,
-  isMobile ? 7  : 5.5,
-  isMobile ? 16 : 13
-);
+const camera = new THREE.PerspectiveCamera(45, vw()/vh(), 0.1, 100);
+camera.position.set(isMobile ? 11 : 8.5, isMobile ? 7 : 5.5, isMobile ? 16 : 13);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: !isMobile,
-  powerPreference: 'high-performance'
-});
+const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
 renderer.setSize(vw(), vh());
 renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.setClearColor(0xf0f0f0, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.95;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
+
+// Environment map (subtle studio lighting)
+new RGBELoader()
+  .setPath('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/')
+  .load('studio_small_09_1k.hdr', (texture) => {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.environment = texture;          // reflections only
+    // scene.background = texture;        // uncomment if you want the HDR as background
+  });
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 0.8, 0);
 controls.autoRotate = true;
-controls.autoRotateSpeed = 0.4;
+controls.autoRotateSpeed = 0.35;
 controls.enablePan = false;
 controls.minDistance = 6;
-controls.maxDistance = 30;
+controls.maxDistance = 28;
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-const key = new THREE.DirectionalLight(0xffffff, 0.85);
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+
+const key = new THREE.DirectionalLight(0xffffff, 0.7);
 key.position.set(10, 14, 8);
 scene.add(key);
 
+// Dynamic colored point lights
+const pointLights = [];
+const lightColors = [0xff2d9b, 0x00c8ff, 0xffcc00];
+for (let i = 0; i < 3; i++) {
+  const light = new THREE.PointLight(lightColors[i], 2.2, 18, 2);
+  scene.add(light);
+  pointLights.push({
+    light,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.4 + Math.random() * 0.5,
+    radius: 6 + Math.random() * 3
+  });
+}
+
+// Materials
 const M = {
-  red:     new THREE.MeshStandardMaterial({ color: 0xe6392b, roughness: 0.4,  metalness: 0.1  }),
-  green:   new THREE.MeshStandardMaterial({ color: 0x2a9d4a, roughness: 0.4,  metalness: 0.1  }),
-  white:   new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.3,  metalness: 0.15 }),
-  black:   new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.45, metalness: 0.2  }),
-  blue:    new THREE.MeshStandardMaterial({ color: 0x1e6fff, roughness: 0.35, metalness: 0.15 }),
-  yellow:  new THREE.MeshStandardMaterial({ color: 0xffd60a, roughness: 0.35, metalness: 0.1  }),
-  magenta: new THREE.MeshStandardMaterial({ color: 0xff2d9b, roughness: 0.35, metalness: 0.15 }),
-  cyan:    new THREE.MeshStandardMaterial({ color: 0x00c8ff, roughness: 0.35, metalness: 0.2  }),
-  chrome:  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2,  metalness: 0.8  })
+  red:     new THREE.MeshStandardMaterial({ color: 0xe6392b, roughness: 0.4, metalness: 0.15 }),
+  green:   new THREE.MeshStandardMaterial({ color: 0x2a9d4a, roughness: 0.4, metalness: 0.15 }),
+  white:   new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.3, metalness: 0.2 }),
+  black:   new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.45, metalness: 0.25 }),
+  blue:    new THREE.MeshStandardMaterial({ color: 0x1e6fff, roughness: 0.35, metalness: 0.2 }),
+  yellow:  new THREE.MeshStandardMaterial({ color: 0xffd60a, roughness: 0.35, metalness: 0.1 }),
+  magenta: new THREE.MeshStandardMaterial({ color: 0xff2d9b, roughness: 0.35, metalness: 0.2 }),
+  cyan:    new THREE.MeshStandardMaterial({ color: 0x00c8ff, roughness: 0.35, metalness: 0.25 }),
+  chrome:  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0.95 }) // higher metalness for env map
 };
 
 const god = new THREE.Group();
 scene.add(god);
 
+// --- Geometry (same as your working version) ---
 const cylR = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.45, 32), M.red);
-cylR.position.set(0, 3.5, 0);
-god.add(cylR);
+cylR.position.set(0, 3.5, 0); god.add(cylR);
 
 const cylG = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.5, 32), M.green);
-cylG.position.set(0, 2.95, 0);
-god.add(cylG);
+cylG.position.set(0, 2.95, 0); god.add(cylG);
 
 const cylW = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 1.05, 32), M.white);
-cylW.position.set(0, 2.1, 0);
-god.add(cylW);
+cylW.position.set(0, 2.1, 0); god.add(cylW);
 
 const core = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.55, 1.55), M.black);
-core.position.set(0, 1.35, 0);
-god.add(core);
+core.position.set(0, 1.35, 0); god.add(core);
 
 const heart = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.85, 1.05), M.blue);
 heart.position.set(0.5, 0.65, -0.15);
-heart.rotation.z = -0.28;
-god.add(heart);
+heart.rotation.z = -0.28; god.add(heart);
 
 const yBody = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.65, 2.1), M.yellow);
-yBody.position.set(-1.75, -0.45, 0.25);
-god.add(yBody);
+yBody.position.set(-1.75, -0.45, 0.25); god.add(yBody);
 
 const yWing = new THREE.Mesh(new THREE.BoxGeometry(0.65, 1.5, 2.1), M.yellow);
-yWing.position.set(-2.8, 0.2, 0.25);
-god.add(yWing);
+yWing.position.set(-2.8, 0.2, 0.25); god.add(yWing);
 
 const rShell = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.95, 2.5), M.red);
-rShell.position.set(-1.85, -0.8, 0.2);
-god.add(rShell);
+rShell.position.set(-1.85, -0.8, 0.2); god.add(rShell);
 
 for (let i = 0; i < (isMobile ? 5 : 7); i++) {
-  const p = new THREE.Mesh(
-    new THREE.BoxGeometry(1.4 + Math.random()*0.8, 0.11, 1.6 + Math.random()*0.9),
-    M.magenta
-  );
+  const p = new THREE.Mesh(new THREE.BoxGeometry(1.4 + Math.random()*0.8, 0.11, 1.6 + Math.random()*0.9), M.magenta);
   p.position.set(2.1 + Math.random()*1.3, 0.7 + Math.random()*1.8, -0.7 + Math.random()*1.8);
-  p.rotation.set((Math.random()-0.5)*1.0, (Math.random()-0.5)*1.3, (Math.random()-0.5)*1.0);
+  p.rotation.set((Math.random()-0.5), (Math.random()-0.5)*1.3, (Math.random()-0.5));
   p.userData = { base: p.position.clone(), phase: Math.random()*6.28, speed: 0.25 + Math.random()*0.6 };
   god.add(p);
 }
@@ -157,10 +150,7 @@ for (let i = 0; i < (isMobile ? 5 : 7); i++) {
 const soul = new THREE.Group();
 const colors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
 for (let i = 0; i < 6; i++) {
-  const s = new THREE.Mesh(
-    new THREE.BoxGeometry(0.17, 1.4, 0.65),
-    new THREE.MeshStandardMaterial({ color: colors[i], roughness: 0.3, metalness: 0.25 })
-  );
+  const s = new THREE.Mesh(new THREE.BoxGeometry(0.17, 1.4, 0.65), new THREE.MeshStandardMaterial({ color: colors[i], roughness: 0.3, metalness: 0.3 }));
   s.position.x = (i - 2.5) * 0.18;
   soul.add(s);
 }
@@ -181,31 +171,24 @@ god.add(shard);
 const debrisCount = isMobile ? 16 : 28;
 for (let i = 0; i < debrisCount; i++) {
   const s = 0.12 + Math.random() * 0.35;
-  const m = new THREE.Mesh(
-    new THREE.BoxGeometry(s, s * (0.35 + Math.random()*0.5), s),
-    [M.green, M.blue, M.yellow, M.cyan, M.magenta, M.red][i % 6]
-  );
+  const m = new THREE.Mesh(new THREE.BoxGeometry(s, s*(0.35+Math.random()*0.5), s), [M.green,M.blue,M.yellow,M.cyan,M.magenta,M.red][i%6]);
   m.position.set((Math.random()-0.5)*9, (Math.random()-0.5)*6, (Math.random()-0.5)*8);
   m.rotation.set(Math.random()*3, Math.random()*3, Math.random()*3);
   m.userData = { phase: Math.random()*6.28, speed: 0.15 + Math.random()*0.4 };
   god.add(m);
 }
 
-const COUNT = isMobile ? 250 : 600;
+// Particles
+const COUNT = isMobile ? 250 : 500;
 const posArr = new Float32Array(COUNT * 3);
 const colArr = new Float32Array(COUNT * 3);
-const palette = [
-  new THREE.Color(0xff2d9b),
-  new THREE.Color(0x00c8ff),
-  new THREE.Color(0xffcc00),
-  new THREE.Color(0xaa44ff)
-];
+const palette = [new THREE.Color(0xff2d9b), new THREE.Color(0x00c8ff), new THREE.Color(0xffcc00), new THREE.Color(0xaa44ff)];
 for (let i = 0; i < COUNT; i++) {
-  posArr[i*3]   = (Math.random()-0.5)*14;
+  posArr[i*3] = (Math.random()-0.5)*14;
   posArr[i*3+1] = (Math.random()-0.5)*9;
   posArr[i*3+2] = (Math.random()-0.5)*12;
-  const c = palette[i % 4];
-  colArr[i*3] = c.r; colArr[i*3+1] = c.g; colArr[i*3+2] = c.b;
+  const c = palette[i%4];
+  colArr[i*3]=c.r; colArr[i*3+1]=c.g; colArr[i*3+2]=c.b;
 }
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
@@ -219,24 +202,48 @@ const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
 }));
 scene.add(particles);
 
-let t = 0;
+// GSAP ScrollTrigger – subtle camera + intensity reaction
+let scrollProgress = 0;
+ScrollTrigger.create({
+  trigger: document.body,
+  start: 'top top',
+  end: '+=2000',
+  scrub: 1.2,
+  onUpdate: (self) => {
+    scrollProgress = self.progress;
+  }
+});
 
+// Animation loop
+let t = 0;
 function animate() {
   requestAnimationFrame(animate);
   t += 0.009;
 
-  god.rotation.y = 0.35 + Math.sin(t * 0.22) * 0.12;
+  // Base rotation
+  god.rotation.y = 0.35 + Math.sin(t * 0.22) * 0.12 + scrollProgress * 1.8;
   god.rotation.x = -0.18 + Math.sin(t * 0.16) * 0.06;
   god.position.y = Math.sin(t * 0.55) * 0.25;
 
+  // Floating plates
   god.children.forEach(c => {
-    if (c.userData && c.userData.base) {
+    if (c.userData?.base) {
       const u = c.userData;
       c.position.x = u.base.x + Math.sin(t * u.speed + u.phase) * 0.3;
       c.position.y = u.base.y + Math.cos(t * u.speed * 0.7 + u.phase) * 0.35;
     }
   });
 
+  // Point lights orbit
+  pointLights.forEach((p, i) => {
+    p.phase += p.speed * 0.012;
+    p.light.position.x = Math.sin(p.phase) * p.radius;
+    p.light.position.y = Math.cos(p.phase * 0.7) * 3 + 2;
+    p.light.position.z = Math.cos(p.phase) * p.radius;
+    p.light.intensity = 1.8 + Math.sin(t * 1.5 + i) * 0.8;
+  });
+
+  // Particles
   const arr = particles.geometry.attributes.position.array;
   for (let i = 0; i < COUNT; i++) {
     arr[i*3]   += Math.sin(t * 0.5 + i) * 0.0015;
@@ -245,8 +252,10 @@ function animate() {
   particles.geometry.attributes.position.needsUpdate = true;
   particles.rotation.y += 0.0008;
 
-  status.textContent = isMobile ? 'MOBILE' : 'DESKTOP';
+  // Camera reacts slightly to scroll
+  camera.position.z = (isMobile ? 16 : 13) - scrollProgress * 3;
 
+  status.textContent = isMobile ? 'MOBILE' : 'DESKTOP';
   controls.update();
   renderer.render(scene, camera);
 }
@@ -254,6 +263,7 @@ function animate() {
 status.textContent = 'READY';
 animate();
 
+// Resize
 let resizeTimer;
 function onResize() {
   clearTimeout(resizeTimer);
@@ -262,13 +272,10 @@ function onResize() {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
-  }, 100);
+  }, 80);
 }
-
 window.addEventListener('resize', onResize);
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', onResize);
-}
+if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
 </script>
 </body>
 </html>
