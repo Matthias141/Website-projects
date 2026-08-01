@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 
-<!-- FIX 1: Single importmap in <head> — browsers only parse the first one anyway -->
+<!-- Single importmap in <head> — browsers only parse the first one anyway -->
 <script type="importmap">
 {
   "imports": {
@@ -21,7 +21,6 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
 
-  /* FIX 2: removed overflow:hidden — causes Safari mobile viewport collapse */
   html,body{
     width:100%;height:100%;
     background:#f0f0f0;
@@ -45,11 +44,9 @@
     position:fixed;
     inset:0;
     z-index:10;
-    /* FIX 3: none on container so canvas touches pass through everywhere */
     pointer-events:none;
   }
 
-  /* FIX 3 cont: only real interactive elements get events */
   .topbar,
   .panel,
   .mobile-nav,
@@ -76,6 +73,11 @@
     font-weight:600;
     letter-spacing:2px;
     text-transform:uppercase;
+  }
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:24px;
   }
   .nav-desktop{
     display:flex;
@@ -115,7 +117,9 @@
     left:28px;
     max-width:480px;
     pointer-events:none;
+    transition:opacity .4s ease;
   }
+  .hero.faded{opacity:0}
   .hero h1{
     font-size:clamp(28px,5vw,42px);
     font-weight:600;
@@ -183,7 +187,7 @@
   }
   .panel .close:hover{background:#f5f5f5}
 
-  /* FIX 4: dedicated overlay captures outside-panel taps without touching OrbitControls */
+  /* Dedicated overlay captures outside-panel taps without touching OrbitControls */
   #panel-overlay{
     display:none;
     position:fixed;
@@ -269,28 +273,180 @@
     .hero h1{font-size:28px}
     .panel{width:100%}
     .topbar{padding:0 20px}
+    .topbar-right{gap:12px}
     .mobile-nav{display:flex}
   }
+
+  /* ===== LOADING SCREEN ===== */
+  #loader{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:#f0f0f0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  #loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+  .loader-name{
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    color:#111;
+  }
+  .loader-bar-wrap{
+    width:160px;
+    height:1px;
+    background:#ddd;
+  }
+  .loader-bar{
+    height:1px;
+    width:0%;
+    background:#111;
+    transition:width .15s ease-out;
+  }
+  .loader-label{
+    font-size:10px;
+    letter-spacing:2px;
+    font-family:monospace;
+    color:#999;
+  }
+
+  /* ===== DRAG HINT ===== */
+  #drag-hint{
+    position:fixed;
+    bottom:52px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    font-size:11px;
+    letter-spacing:2px;
+    font-family:monospace;
+    color:#111;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .5s;
+  }
+  #drag-hint.visible{opacity:0.45}
+
+  /* ===== DARK MODE ===== */
+  body.dark{background:#0e0e0e;color:#f0f0f0}
+  body.dark .topbar{background:linear-gradient(to bottom,rgba(14,14,14,0.95),rgba(14,14,14,0))}
+  body.dark .nav-desktop a{color:#f0f0f0}
+  body.dark .menu-btn span{background:#f0f0f0}
+  body.dark .hero h1{color:#f0f0f0}
+  body.dark .hero p{color:#f0f0f0}
+  body.dark .logo{color:#f0f0f0}
+  body.dark #status{color:#f0f0f0}
+  body.dark #drag-hint{color:#f0f0f0}
+  body.dark .panel{background:rgba(20,20,20,0.94);color:#f0f0f0}
+  body.dark .panel p{color:#f0f0f0}
+  body.dark .panel h2{color:#f0f0f0}
+  body.dark .panel .close{border-color:#333;color:#f0f0f0}
+  body.dark .panel .close:hover{background:#222}
+  body.dark .work-item{border-bottom-color:#2a2a2a}
+  body.dark .work-item h3{color:#f0f0f0}
+  body.dark .skill{background:#1a1a1a;color:#f0f0f0}
+  body.dark .contact-links a{color:#f0f0f0;border-bottom-color:#222}
+  body.dark .mobile-nav{background:rgba(14,14,14,0.97)}
+  body.dark .mobile-nav a{color:#f0f0f0}
+  body.dark #loader{background:#0e0e0e}
+  body.dark .loader-name{color:#f0f0f0}
+  body.dark .loader-bar-wrap{background:#333}
+  body.dark .loader-bar{background:#f0f0f0}
+  body.dark .cv-btn{border-color:#f0f0f0;color:#f0f0f0}
+  body.dark .cv-btn:hover{background:#f0f0f0;color:#111}
+
+  /* ===== TOOLBAR (dark mode + sound toggles) ===== */
+  .toolbar{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .tool-btn{
+    width:32px;height:32px;
+    border:1px solid rgba(0,0,0,0.15);
+    border-radius:50%;
+    background:rgba(255,255,255,0.6);
+    backdrop-filter:blur(8px);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    line-height:1;
+    transition:background .2s, border-color .2s, transform .15s;
+  }
+  .tool-btn:hover{background:rgba(255,255,255,0.9)}
+  .tool-btn:active{transform:scale(0.92)}
+  body.dark .tool-btn{
+    border-color:rgba(255,255,255,0.15);
+    background:rgba(30,30,30,0.7);
+  }
+  body.dark .tool-btn:hover{background:rgba(50,50,50,0.9)}
+
+  /* ===== CV DOWNLOAD / PORTFOLIO BUTTON ===== */
+  .cv-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:24px;
+    padding:12px 20px;
+    border:1px solid #111;
+    border-radius:4px;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.5px;
+    text-decoration:none;
+    color:#111;
+    transition:background .2s, color .2s;
+    pointer-events:auto;
+  }
+  .cv-btn:hover{background:#111;color:#fff}
+  .cv-btn + .cv-btn{margin-left:10px}
 </style>
 </head>
 <body>
 
-<!-- FIX 4: overlay sits at z-index:9, above canvas (z:1), below panels (z:10) -->
+<!-- Overlay sits at z-index:9, above canvas (z:1), below panels (z:10) -->
 <div id="panel-overlay"></div>
+
+<!-- ===== LOADING SCREEN =====
+     No external textures are loaded here (the sculpture is procedural geometry),
+     so "progress" is a mix of real signals (fonts ready, first frame rendered)
+     and a small minimum-display time so it never just flashes on a fast connection. -->
+<div id="loader">
+  <div class="loader-name">Ifedayo Idowu</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  <div class="loader-label" id="loaderLabel">LOADING 0%</div>
+</div>
+
+<div id="drag-hint">DRAG TO EXPLORE</div>
 
 <div id="ui">
   <div class="topbar">
     <div class="logo">Ifedayo Idowu</div>
-    <nav class="nav-desktop">
-      <a href="#" data-panel="about">About</a>
-      <a href="#" data-panel="work">Work</a>
-      <a href="#" data-panel="skills">Skills</a>
-      <a href="#" data-panel="contact">Contact</a>
-    </nav>
-    <!-- FIX 5: aria-expanded tracks open state for hamburger -->
-    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="topbar-right">
+      <nav class="nav-desktop">
+        <a href="#" data-panel="about">About</a>
+        <a href="#" data-panel="work">Work</a>
+        <a href="#" data-panel="skills">Skills</a>
+        <a href="#" data-panel="contact">Contact</a>
+      </nav>
+      <div class="toolbar">
+        <button class="tool-btn" id="darkToggle" aria-label="Toggle dark mode" aria-pressed="false">🌙</button>
+        <button class="tool-btn" id="soundToggle" aria-label="Toggle ambient sound" aria-pressed="false">🔈</button>
+      </div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 
   <div class="mobile-nav" id="mobileNav">
@@ -300,7 +456,7 @@
     <a href="#" data-panel="contact">Contact</a>
   </div>
 
-  <div class="hero">
+  <div class="hero" id="hero">
     <h1>Creative Technologist<br>&amp; Systems Engineer</h1>
     <p>Building interactive systems, generative experiences, and low-level tools from Umuahia, Nigeria.</p>
   </div>
@@ -334,6 +490,11 @@
       <span>WebGL / Creative Coding</span>
       <p style="margin-top:8px;font-size:14px;opacity:0.7">Ongoing series of real-time visual systems exploring form, chaos, and structured randomness.</p>
     </div>
+    <!-- The full body of work lives elsewhere — point people to it rather than
+         trying to cram an "extensive" archive into this single-page piece. -->
+    <a class="cv-btn" href="https://your-full-portfolio-url.example" target="_blank" rel="noopener" style="margin-top:8px">
+      <span>→</span> View Full Portfolio Archive
+    </a>
   </div>
 
   <div class="panel" id="panel-skills">
@@ -362,11 +523,15 @@
       <a href="mailto:hello@ifedayo.dev">
         <span>→</span> Email
       </a>
-      <!-- FIX 6: actual GitHub profile, not github.com root -->
       <a href="https://github.com/Matthias141" target="_blank" rel="noopener">
         <span>→</span> GitHub
       </a>
     </div>
+    <!-- One-tap CV download for anyone landing here from a job application.
+         Replace the href with the real hosted file — see the note in the JS/README below. -->
+    <a class="cv-btn" href="assets/Ifedayo-Idowu-CV.pdf" download="Ifedayo-Idowu-CV.pdf">
+      <span>↓</span> Download CV
+    </a>
   </div>
 </div>
 
@@ -384,20 +549,22 @@ const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
 function vw(){ return window.innerWidth; }
 function vh(){ return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
 
+const LIGHT_BG = 0xf0f0f0;
+const DARK_BG  = 0x0e0e0e;
+
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf0f0f0);
+scene.background = new THREE.Color(LIGHT_BG);
 
 const camera = new THREE.PerspectiveCamera(45, vw()/vh(), 0.1, 100);
 camera.position.set(isMobile ? 11 : 8.5, isMobile ? 7 : 5.5, isMobile ? 16 : 13);
 
 const renderer = new THREE.WebGLRenderer({
-  // FIX 7: antialias off on mobile — MSAA is a significant GPU cost on phones
   antialias: !isMobile,
   powerPreference: 'high-performance'
 });
 renderer.setSize(vw(), vh());
 renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.75 : 2));
-renderer.setClearColor(0xf0f0f0, 1);
+renderer.setClearColor(LIGHT_BG, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -546,6 +713,85 @@ if (!isMobile) {
   composer.addPass(new OutputPass());
 }
 
+// ===== AMBIENT AUDIO (generative, tied to sculpture motion) =====
+// No audio file is loaded — a soft three-note drone is synthesized with the
+// Web Audio API and its filter cutoff is modulated by the sculpture's own
+// rotation, so the sound literally tracks the motion on screen.
+let audioCtx = null;
+let masterGain = null;
+let audioVoices = [];
+let soundOn = false;
+
+function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0; // starts silent, faded in on toggle
+  masterGain.connect(audioCtx.destination);
+
+  const freqs = [110, 164.81, 220]; // A2 / E3 / A3 — a quiet open fifth + octave
+  audioVoices = freqs.map((f, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = f;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 700;
+
+    const voiceGain = audioCtx.createGain();
+    voiceGain.gain.value = 0.22 / (i + 1);
+
+    osc.connect(filter);
+    filter.connect(voiceGain);
+    voiceGain.connect(masterGain);
+    osc.start();
+
+    return { osc, filter };
+  });
+}
+
+const soundToggle = document.getElementById('soundToggle');
+soundToggle.addEventListener('click', () => {
+  if (!audioCtx) initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  soundOn = !soundOn;
+  const now = audioCtx.currentTime;
+  masterGain.gain.cancelScheduledValues(now);
+  masterGain.gain.setTargetAtTime(soundOn ? 0.45 : 0, now, 0.4);
+
+  soundToggle.textContent = soundOn ? '🔊' : '🔈';
+  soundToggle.setAttribute('aria-pressed', String(soundOn));
+});
+
+// ===== DARK MODE TOGGLE =====
+const darkToggle = document.getElementById('darkToggle');
+darkToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark');
+  const bg = isDark ? DARK_BG : LIGHT_BG;
+  scene.background = new THREE.Color(bg);
+  renderer.setClearColor(bg, 1);
+  darkToggle.textContent = isDark ? '☀️' : '🌙';
+  darkToggle.setAttribute('aria-pressed', String(isDark));
+});
+
+// ===== HERO FADE + DRAG HINT (interaction feedback) =====
+const hero = document.getElementById('hero');
+const dragHint = document.getElementById('drag-hint');
+let heroFadeTimer = null;
+
+function onInteractionStart() {
+  hero.classList.add('faded');
+  dragHint.classList.remove('visible'); // the user found it — stop nagging
+  clearTimeout(heroFadeTimer);
+}
+function onInteractionEnd() {
+  clearTimeout(heroFadeTimer);
+  heroFadeTimer = setTimeout(() => hero.classList.remove('faded'), 2500);
+}
+controls.addEventListener('start', onInteractionStart);
+controls.addEventListener('end', onInteractionEnd);
+
 let t = 0;
 function animate() {
   requestAnimationFrame(animate);
@@ -570,6 +816,15 @@ function animate() {
   }
   particles.geometry.attributes.position.needsUpdate = true;
   particles.rotation.y += 0.0008;
+
+  // Tie the ambient drone's brightness to the sculpture's own rotation/bob
+  if (soundOn && audioVoices.length) {
+    const now = audioCtx.currentTime;
+    audioVoices.forEach((v, i) => {
+      const cutoff = 550 + Math.abs(god.rotation.y) * 400 + Math.sin(t * 0.3 + i) * 150;
+      v.filter.frequency.setTargetAtTime(cutoff, now, 0.4);
+    });
+  }
 
   controls.update();
   if (composer) {
@@ -596,6 +851,41 @@ function onResize() {
 window.addEventListener('resize', onResize);
 if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
 
+// ===== LOADING SCREEN SEQUENCE =====
+// Real signals (fonts ready, first frame drawn) blended with a small minimum
+// display time so the loader reads as intentional rather than a flash/glitch.
+const loader = document.getElementById('loader');
+const loaderBar = document.getElementById('loaderBar');
+const loaderLabel = document.getElementById('loaderLabel');
+const loadStart = performance.now();
+
+function setLoaderProgress(pct) {
+  loaderBar.style.width = pct + '%';
+  loaderLabel.textContent = 'LOADING ' + Math.floor(pct) + '%';
+}
+
+async function bootSequence() {
+  setLoaderProgress(15);
+
+  await (document.fonts ? document.fonts.ready.catch(() => {}) : Promise.resolve());
+  setLoaderProgress(55);
+
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  setLoaderProgress(85);
+
+  const elapsed = performance.now() - loadStart;
+  const MIN_DISPLAY_MS = 600;
+  await new Promise(resolve => setTimeout(resolve, Math.max(0, MIN_DISPLAY_MS - elapsed)));
+  setLoaderProgress(100);
+
+  setTimeout(() => {
+    loader.classList.add('hidden');
+    dragHint.classList.add('visible');
+    setTimeout(() => dragHint.classList.remove('visible'), 3000);
+  }, 200);
+}
+bootSequence();
+
 // ===== UI LOGIC =====
 const panels    = document.querySelectorAll('.panel');
 const mobileNav = document.getElementById('mobileNav');
@@ -609,7 +899,6 @@ function openPanel(id) {
     panel.classList.add('open');
     overlay.classList.add('active');
   }
-  // FIX 5: always reset mobile nav + hamburger state when a panel opens
   closeMobileNav();
 }
 
@@ -636,11 +925,9 @@ document.querySelectorAll('[data-close]').forEach(btn => {
 
 menuBtn.addEventListener('click', () => {
   const isOpen = mobileNav.classList.toggle('open');
-  // FIX 5: keep aria-expanded in sync with actual state
   menuBtn.setAttribute('aria-expanded', String(isOpen));
 });
 
-// FIX 4: overlay handles outside-panel dismissal — never intercepts canvas orbit events
 overlay.addEventListener('click', closePanels);
 </script>
 </body>
