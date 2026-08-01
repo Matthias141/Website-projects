@@ -1,0 +1,54 @@
+diff --git a/node_modules/screen-space-reflections/dist/index.cjs b/node_modules/screen-space-reflections/dist/index.cjs
+index 8ca2dfc..9bbe9d7 100644
+--- a/node_modules/screen-space-reflections/dist/index.cjs
++++ b/node_modules/screen-space-reflections/dist/index.cjs
+@@ -287,12 +287,14 @@ class ReflectionsPass extends postprocessing.Pass {
+ 
+     if (this.USE_MRT) {
+       // buffers: normal, depth (2), roughness will be written to the alpha channel of the normal buffer
+-      this.gBuffersRenderTarget = new three.WebGLMultipleRenderTargets(width, height, 2, {
++      // PATCHED — see comment in dist/index.js for details.
++      this.gBuffersRenderTarget = new three.WebGLRenderTarget(width, height, {
++        count: 2,
+         minFilter: three.LinearFilter,
+         magFilter: three.LinearFilter
+       });
+-      this.normalTexture = this.gBuffersRenderTarget.texture[0];
+-      this.depthTexture = this.gBuffersRenderTarget.texture[1];
++      this.normalTexture = this.gBuffersRenderTarget.textures[0];
++      this.depthTexture = this.gBuffersRenderTarget.textures[1];
+     } else {
+       // depth pass
+       this.webgl1DepthPass = new postprocessing.DepthPass(this._scene, this._camera);
+diff --git a/node_modules/screen-space-reflections/dist/index.js b/node_modules/screen-space-reflections/dist/index.js
+index 1e17a6f..7e62400 100644
+--- a/node_modules/screen-space-reflections/dist/index.js
++++ b/node_modules/screen-space-reflections/dist/index.js
+@@ -1,5 +1,5 @@
+ import { Pass, RenderPass, DepthPass, Effect, Selection } from 'postprocessing';
+-import { ShaderMaterial, Uniform, Vector2, Matrix3, TangentSpaceNormalMap, GLSL3, Matrix4, Vector3, WebGLRenderTarget, LinearFilter, HalfFloatType, WebGLMultipleRenderTargets, ShaderChunk, Color, Quaternion, VideoTexture, DataTexture, RGBAFormat, FloatType, NearestFilter, FramebufferTexture, WebGLCubeRenderTarget, CubeCamera, PMREMGenerator, Texture } from 'three';
++import { ShaderMaterial, Uniform, Vector2, Matrix3, TangentSpaceNormalMap, GLSL3, Matrix4, Vector3, WebGLRenderTarget, LinearFilter, HalfFloatType, ShaderChunk, Color, Quaternion, VideoTexture, DataTexture, RGBAFormat, FloatType, NearestFilter, FramebufferTexture, WebGLCubeRenderTarget, CubeCamera, PMREMGenerator, Texture } from 'three';
+ 
+ function _extends() {
+   _extends = Object.assign ? Object.assign.bind() : function (target) {
+@@ -283,12 +283,17 @@ class ReflectionsPass extends Pass {
+ 
+     if (this.USE_MRT) {
+       // buffers: normal, depth (2), roughness will be written to the alpha channel of the normal buffer
+-      this.gBuffersRenderTarget = new WebGLMultipleRenderTargets(width, height, 2, {
++      // PATCHED (see patches/screen-space-reflections+2.5.0.patch): three.js
++      // removed the dedicated WebGLMultipleRenderTargets class — modern MRT
++      // is a plain WebGLRenderTarget with a `count` option, and the render
++      // targets live on the plural `.textures[]`, not `.texture[]`.
++      this.gBuffersRenderTarget = new WebGLRenderTarget(width, height, {
++        count: 2,
+         minFilter: LinearFilter,
+         magFilter: LinearFilter
+       });
+-      this.normalTexture = this.gBuffersRenderTarget.texture[0];
+-      this.depthTexture = this.gBuffersRenderTarget.texture[1];
++      this.normalTexture = this.gBuffersRenderTarget.textures[0];
++      this.depthTexture = this.gBuffersRenderTarget.textures[1];
+     } else {
+       // depth pass
+       this.webgl1DepthPass = new DepthPass(this._scene, this._camera);
