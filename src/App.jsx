@@ -19,6 +19,7 @@ export default function App() {
     []
   );
   const sculptureGroupRef = useRef();
+  const roomEnvironment = useMemo(() => new RoomEnvironment(), []);
 
   return (
     <Canvas
@@ -37,9 +38,12 @@ export default function App() {
 
       {/* Procedural IBL — same PMREMGenerator + RoomEnvironment approach as
           the vanilla build, no HDRI file to fetch. drei's <Environment>
-          does the PMREM baking for you when given a scene as children. */}
+          does the PMREM baking for you when given a scene as children.
+          RoomEnvironment is a THREE.Scene subclass, not a component — it
+          must be constructed with `new` and handed over via <primitive>,
+          not rendered as <RoomEnvironment />. */}
       <Environment resolution={256}>
-        <RoomEnvironment />
+        <primitive object={roomEnvironment} />
       </Environment>
 
       <ambientLight intensity={0.5} />

@@ -35,12 +35,16 @@ class SSRBoundary extends Component {
  * `.textures[]` array. Fixed via patch-package — see
  * patches/screen-space-reflections+2.5.0.patch, applied automatically on
  * every `npm install` via the postinstall script in package.json.
- * The patch fixes the BUILD (verified with `npm run build`). It does NOT
- * prove the shader renders correctly in a live WebGL context — that needs
- * `npm run dev` and an actual look at the chrome eye ring, which this
- * sandbox can't do (no GPU/browser here). If it errors or renders garbage
- * at runtime, N8AO + Bloom alone is still a complete, safe fallback —
- * comment the <SSR /> line out below.
+ * The patch fixes the BUILD. It does NOT fix the runtime: verified live
+ * (headless Chromium, `npm run dev`) that `TemporalResolvePass.render`
+ * throws `Cannot read properties of undefined (reading 'width')` inside
+ * `WebGLRenderer.copyFramebufferToTexture`, every frame, inside R3F's
+ * render loop — a React error boundary around <SSR/> does NOT catch this
+ * (it's not in React's render/commit phase), and the repeated throw was
+ * enough to lose the WebGL context entirely, which is what produced the
+ * blank white page. DISABLED below pending an upstream fix or a rewrite
+ * against the current postprocessing/three APIs — N8AO + Bloom alone is
+ * a complete, safe fallback.
  */
 function SSR() {
   const { scene, camera } = useThree();
@@ -66,9 +70,7 @@ export default function Effects({ isMobile }) {
   return (
     <EffectComposer multisampling={0}>
       <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
-      <SSRBoundary>
-        <SSR />
-      </SSRBoundary>
+      {/* <SSRBoundary><SSR /></SSRBoundary> — disabled, see docstring above */}
       <Bloom intensity={0.28} luminanceThreshold={0.4} luminanceSmoothing={0.88} mipmapBlur />
     </EffectComposer>
   );
