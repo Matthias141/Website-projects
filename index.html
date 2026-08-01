@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,21 +10,21 @@
      Replace the *.example URLs below with your real domain once it's live —
      og:image in particular needs a real hosted screenshot (1200x630) or
      link previews on X/LinkedIn/iMessage will just show a blank card. -->
-<meta name="description" content="Ifedayo Idowu — DevOps/Cloud engineer and creative technologist based in Umuahia, Nigeria. GitOps platforms, Kubernetes, generative 3D art, and systems tooling.">
+<meta name="description" content="Ifedayo Idowu — DevOps/Cloud engineer (AWS, Terraform, GitHub Actions, OIDC security) and creative technologist based in Abia State, Nigeria.">
 <link rel="canonical" href="https://your-domain.example/">
 <meta name="theme-color" content="#f0f0f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ifedayo Idowu — Creative Technologist & Systems Engineer">
-<meta property="og:description" content="DevOps/Cloud engineer and creative technologist. GitOps, Kubernetes, generative 3D art, and systems tooling from Umuahia, Nigeria.">
+<meta property="og:description" content="DevOps/Cloud engineer (AWS, Terraform, GitHub Actions) and creative technologist from Abia State, Nigeria.">
 <meta property="og:url" content="https://your-domain.example/">
 <meta property="og:image" content="https://your-domain.example/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@Raw_Chrome">
 <meta name="twitter:title" content="Ifedayo Idowu — Creative Technologist & Systems Engineer">
-<meta name="twitter:description" content="DevOps/Cloud engineer and creative technologist. GitOps, Kubernetes, generative 3D art, and systems tooling from Umuahia, Nigeria.">
+<meta name="twitter:description" content="DevOps/Cloud engineer (AWS, Terraform, GitHub Actions) and creative technologist from Abia State, Nigeria.">
 <meta name="twitter:image" content="https://your-domain.example/og-image.png">
 
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -309,6 +310,16 @@
   .work-detail p:last-child{margin-bottom:0}
   .work-detail strong{opacity:1;font-weight:600}
 
+  .skills-group{margin-bottom:22px}
+  .skills-group:last-child{margin-bottom:0}
+  .skills-group h3{
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    opacity:0.5;
+    margin-bottom:10px;
+  }
   .skills-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -469,6 +480,7 @@
   body.dark .panel .close:hover{background:#222}
   body.dark .work-item{border-bottom-color:#2a2a2a}
   body.dark .work-item h3{color:#f0f0f0}
+  body.dark .skills-group h3{color:#f0f0f0}
   body.dark .skill{background:#1a1a1a;color:#f0f0f0}
   body.dark .contact-links a{color:#f0f0f0;border-bottom-color:#222}
   body.dark .mobile-nav{background:rgba(14,14,14,0.97)}
@@ -600,8 +612,9 @@
   <div class="panel" id="panel-about" role="dialog" aria-modal="true" aria-labelledby="panel-about-title">
     <button class="close" data-close aria-label="Close panel">×</button>
     <h2 id="panel-about-title">About</h2>
-    <p>I'm Ifedayo Idowu — a DevOps/Cloud Engineer, creative technologist, and digital builder based in Umuahia, Nigeria.</p>
-    <p>On the infrastructure side, I design and ship GitOps platforms, CI/CD pipelines, and Kubernetes workloads on AWS and Oracle Cloud — with a security-first approach covering IAM hardening, container scanning, and policy enforcement. Currently building Foundry, a production GitOps platform running real workloads.</p>
+    <p>I'm Ifedayo Idowu — a DevOps/Cloud Engineer, creative technologist, and digital builder based in Aba, Abia State, Nigeria (relocating to Ibadan).</p>
+    <p>On the infrastructure side, I build multi-environment CI/CD pipelines on AWS with Terraform and GitHub Actions, secured via OIDC federation — zero long-lived credentials in version control. Security tooling (Trivy, Semgrep, Gitleaks, OWASP ZAP) is a mandatory gate in every pipeline I ship, not an afterthought. Currently building Foundry, a production GitOps platform running real workloads, and pursuing AWS Certified Solutions Architect – Associate.</p>
+    <p>During NYSC service, I also designed and delivered digital literacy training to 600+ civil servants across 4 Abia State government ministries — curriculum materials that were adopted into the ongoing programme.</p>
     <p>On the creative side, I build things that live on-chain and on-screen — generative sculpture, procedural motion, and digital experiences with their own internal logic. GODFORM is one of them.</p>
     <p>Also exploring: systems programming in C++ and Rust, AI image generation, and tools built for builders on the African continent.</p>
   </div>
@@ -629,15 +642,32 @@
       <summary>
         <div>
           <h3>Foundry</h3>
-          <span>GitOps Platform — In Progress</span>
+          <span>Serverless CI/CD Pipeline on AWS — 2026</span>
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </summary>
       <div class="work-detail">
-        <p><strong>Problem —</strong> <!-- TODO --><em>What was manual, slow, or insecure before Foundry?</em></p>
-        <p><strong>Approach —</strong> GitOps-driven deployment pipeline across AWS and Oracle Cloud, with IAM hardening, container scanning, and policy enforcement built in from the start.</p>
-        <p><strong>Stack —</strong> Kubernetes, Terraform, Docker, GitHub Actions CI/CD.</p>
-        <p><strong>Outcome —</strong> <!-- TODO --><em>Add a specific result — deploy time reduced, workloads migrated, incidents caught pre-prod, etc.</em></p>
+        <p><strong>Problem —</strong> Manual releases and configuration drift across dev, staging, and production, with long-lived AWS credentials sitting in the pipeline.</p>
+        <p><strong>Approach —</strong> Version-controlled every AWS resource — Lambda, IAM roles, API Gateway — in Terraform as a single source of truth, and replaced static credentials with OIDC federation between GitHub Actions and AWS IAM: zero long-lived secrets in version control.</p>
+        <p><strong>Stack —</strong> AWS Lambda, API Gateway, Terraform, GitHub Actions, Trivy, Bandit, pip-audit.</p>
+        <p><strong>Outcome —</strong> 131 workflow runs across a 3-environment promotion gate with no manual releases; deployments protected by a 4-stage canary rollout (10%→25%→50%→100%) with automatic rollback on error, a 6-rule WAF policy, and 8 CloudWatch alarms with SNS alerting.</p>
+        <p><a href="https://github.com/Matthias141/my-cicd-project" target="_blank" rel="noopener">→ github.com/Matthias141/my-cicd-project</a></p>
+      </div>
+    </details>
+
+    <details class="work-item">
+      <summary>
+        <div>
+          <h3>AbiaEats</h3>
+          <span>Food Delivery Marketplace (Next.js) — 2026</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="work-detail">
+        <p><strong>What it is —</strong> A food delivery marketplace built for Southeastern Nigeria, with infrastructure and security treated as first-class from day one rather than bolted on later.</p>
+        <p><strong>Approach —</strong> A 7-stage CI security pipeline gates every pull request — Gitleaks secret scanning, Semgrep SAST, npm audit, TypeScript enforcement, ESLint, a build gate, and OWASP ZAP dynamic analysis against a live staging environment.</p>
+        <p><strong>Stack —</strong> Next.js, Terraform, GitHub Actions, AWS S3 Object Lock.</p>
+        <p><strong>Outcome —</strong> A tamper-resistant audit trail via S3 Object Lock in GOVERNANCE mode with AES-256 encryption, 90-day retention, and a least-privilege IAM policy scoped to PutObject only.</p>
       </div>
     </details>
 
@@ -670,25 +700,42 @@
       </div>
     </details>
 
-    <!-- The full body of work lives elsewhere — point people to it rather than
-         trying to cram an "extensive" archive into this single-page piece. -->
-    <a class="cv-btn" href="https://your-full-portfolio-url.example" target="_blank" rel="noopener" style="margin-top:8px">
-      <span>→</span> View Full Portfolio Archive
+    <!-- Full art archive lives at /gallery/ — same domain, its own page (see
+         gallery/index.html). Kept off this route so the WebGL scene here
+         doesn't compete with 1000+ images for load time. -->
+    <a class="cv-btn" href="gallery/" style="margin-top:8px">
+      <span>→</span> View Full Art Archive
     </a>
   </div>
 
   <div class="panel" id="panel-skills" role="dialog" aria-modal="true" aria-labelledby="panel-skills-title">
     <button class="close" data-close aria-label="Close panel">×</button>
     <h2 id="panel-skills-title">Skills</h2>
-    <div class="skills-grid">
-      <div class="skill">C++ / Systems</div>
-      <div class="skill">Three.js / WebGL</div>
-      <div class="skill">JavaScript / TypeScript</div>
-      <div class="skill">Cryptography</div>
-      <div class="skill">Concurrency</div>
-      <div class="skill">Generative Art</div>
-      <div class="skill">Rust / Go</div>
-      <div class="skill">Real-time Graphics</div>
+
+    <div class="skills-group">
+      <h3>Cloud &amp; DevOps</h3>
+      <div class="skills-grid">
+        <div class="skill">AWS (Lambda, API Gateway, IAM)</div>
+        <div class="skill">Terraform</div>
+        <div class="skill">GitHub Actions / OIDC</div>
+        <div class="skill">Docker</div>
+        <div class="skill">Security Gating (Trivy, Semgrep, ZAP)</div>
+        <div class="skill">CloudWatch / X-Ray / SNS</div>
+      </div>
+    </div>
+
+    <div class="skills-group">
+      <h3>Creative &amp; Systems</h3>
+      <div class="skills-grid">
+        <div class="skill">C++ / Systems</div>
+        <div class="skill">Three.js / WebGL</div>
+        <div class="skill">JavaScript / TypeScript</div>
+        <div class="skill">Cryptography</div>
+        <div class="skill">Concurrency</div>
+        <div class="skill">Generative Art</div>
+        <div class="skill">Rust / Go</div>
+        <div class="skill">Real-time Graphics</div>
+      </div>
     </div>
   </div>
 
@@ -722,6 +769,9 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const status = document.getElementById('status');
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -754,6 +804,8 @@ renderer.setClearColor(LIGHT_BG, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // soft-edged shadows, cheap on desktop, skipped entirely on mobile below
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -766,28 +818,196 @@ controls.enablePan = false;
 controls.minDistance = 6;
 controls.maxDistance = 28;
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+// ===== IMAGE-BASED LIGHTING (env map reflections) =====
+// PMREMGenerator bakes a blurred, mip-mapped reflection map from a procedural
+// "room" (soft studio light panels) — no HDRI file to fetch, so this works
+// offline and adds zero network requests. Setting scene.environment (instead
+// of material.envMap on each material one by one) means every Standard/
+// Physical material in the scene automatically picks up reflections, with
+// per-material strength controlled by material.envMapIntensity later.
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+const envRT = pmremGenerator.fromScene(new RoomEnvironment(), 0.035);
+scene.environment = envRT.texture;
+pmremGenerator.dispose();
+
+// ===== ATMOSPHERE (depth fog) =====
+// Exponential-squared fog falls off with distance-squared instead of
+// linearly, which reads as "atmospheric haze" rather than a hard cutoff.
+// Color is kept in sync with light/dark mode inside darkToggle below.
+scene.fog = new THREE.FogExp2(LIGHT_BG, 0.02);
+
+// Ambient trimmed down from 0.75 -> 0.5: the env map above now supplies a
+// soft ambient-like fill on its own, so without this the sculpture would
+// look flat/overexposed (two ambient sources stacking).
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 const key = new THREE.DirectionalLight(0xffffff, 0.9);
 key.position.set(10, 14, 8);
+// Shadow casting is desktop-only: shadow maps are a real GPU/CPU cost
+// (extra render pass from the light's point of view every frame), and
+// mobile GPUs are already the constrained path everywhere else in this file.
+key.castShadow = !isMobile;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.near = 4;
+key.shadow.camera.far = 30;
+key.shadow.camera.left = -8;
+key.shadow.camera.right = 8;
+key.shadow.camera.top = 8;
+key.shadow.camera.bottom = -8;
+key.shadow.bias = -0.0015; // pulls shadow acne off the surface without introducing visible "peter-panning" gaps
+key.shadow.radius = 3;     // softens the PCF filter edge
 scene.add(key);
 const fill = new THREE.DirectionalLight(0xffffff, 0.3);
 fill.position.set(-8, 5, -6);
 scene.add(fill);
 
+// ===== GROUND / CONTACT SHADOW =====
+// ShadowMaterial renders fully transparent everywhere EXCEPT where a shadow
+// falls on it — so you get a grounding contact-shadow without an actual
+// visible floor plane. This is the standard "invisible ground catcher" trick.
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(14, 64),
+  new THREE.ShadowMaterial({ opacity: 0.28 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -3.4; // below the lowest possible debris chunk (they scatter down to y ≈ -3)
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Materials that get the custom shader injection keep a reference to their
+// compiled `shader` object here, so animate() can push an updated uTime
+// into them every frame without recompiling the shader (recompiling is
+// expensive; updating a uniform is nearly free).
+const shaderMaterials = [];
+
+// Compact Ashima/McEwan 3D simplex noise (public-domain reference GLSL
+// implementation). Used below purely to displace vertices a tiny amount
+// along their normal — this is what makes flat box/cylinder faces read as
+// a subtly "alive" organic surface instead of dead-flat geometry.
+const GLSL_SIMPLEX_NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i  = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(
+           i.z + vec4(0.0, i1.z, i2.z, 1.0))
+         + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+         + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0)*2.0 + 1.0;
+  vec4 s1 = floor(b1)*2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}`;
+
+// Injects two effects into a stock MeshPhysicalMaterial's shader via
+// onBeforeCompile — this is the standard three.js "extend without forking"
+// pattern: you keep the full PBR lighting/reflection pipeline (from step 1
+// above) and layer custom GLSL on top, instead of hand-writing a whole
+// ShaderMaterial and reimplementing lighting yourself.
+//   1. VERTEX: low-amplitude simplex-noise displacement along the surface
+//      normal -> organic micro-surface instead of dead-flat primitives.
+//   2. FRAGMENT: fresnel rim light -> edges lit up based on view angle
+//      (grazing angles = brighter), the classic "glowing artifact" look
+//      that also gives the bloom pass something to grab onto.
+// Skipped entirely on mobile: per-pixel/per-vertex noise is real fragment
+// shader cost, and mobile GPUs are already the constrained path here.
+function attachFresnelNoise(material, { fresnelColor = 0xffffff, fresnelPower = 2.2, fresnelIntensity = 0.35, noiseAmp = 0.03 } = {}) {
+  if (isMobile) return material;
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = { value: 0 };
+    shader.uniforms.uNoiseAmp = { value: noiseAmp };
+    shader.uniforms.uFresnelColor = { value: new THREE.Color(fresnelColor) };
+    shader.uniforms.uFresnelPower = { value: fresnelPower };
+    shader.uniforms.uFresnelIntensity = { value: fresnelIntensity };
+
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `
+        #include <common>
+        uniform float uTime;
+        uniform float uNoiseAmp;
+        ${GLSL_SIMPLEX_NOISE}
+      `)
+      .replace('#include <begin_vertex>', `
+        #include <begin_vertex>
+        float n = snoise(position * 1.1 + uTime * 0.15);
+        transformed += normal * n * uNoiseAmp;
+      `);
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `
+        #include <common>
+        uniform vec3 uFresnelColor;
+        uniform float uFresnelPower;
+        uniform float uFresnelIntensity;
+      `)
+      .replace('#include <dithering_fragment>', `
+        float fresnel = pow(1.0 - saturate(dot(normalize(vNormal), normalize(vViewPosition))), uFresnelPower);
+        gl_FragColor.rgb += uFresnelColor * fresnel * uFresnelIntensity;
+        #include <dithering_fragment>
+      `);
+
+    shaderMaterials.push(shader);
+  };
+  material.needsUpdate = true;
+  return material;
+}
+
 const M = {
-  red:     new THREE.MeshStandardMaterial({ color: 0xe6392b, roughness: 0.32, metalness: 0.25 }),
-  green:   new THREE.MeshStandardMaterial({ color: 0x2a9d4a, roughness: 0.32, metalness: 0.25 }),
-  white:   new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.22, metalness: 0.35 }),
-  black:   new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.38, metalness: 0.4  }),
-  blue:    new THREE.MeshStandardMaterial({ color: 0x1e6fff, roughness: 0.28, metalness: 0.3  }),
-  yellow:  new THREE.MeshStandardMaterial({ color: 0xffd60a, roughness: 0.28, metalness: 0.2  }),
-  magenta: new THREE.MeshStandardMaterial({ color: 0xff2d9b, roughness: 0.28, metalness: 0.3  }),
-  cyan:    new THREE.MeshStandardMaterial({ color: 0x00c8ff, roughness: 0.28, metalness: 0.35 }),
-  chrome:  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.08, metalness: 1.0  })
+  red:     attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0xe6392b, roughness: 0.32, metalness: 0.25, envMapIntensity: 0.8 }), { fresnelColor: 0xff8877 }),
+  green:   attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0x2a9d4a, roughness: 0.32, metalness: 0.25, envMapIntensity: 0.8 }), { fresnelColor: 0x88ffaa }),
+  white:   attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0xf8f8f8, roughness: 0.22, metalness: 0.35, envMapIntensity: 1.0 }), { fresnelColor: 0xffffff, fresnelIntensity: 0.25 }),
+  black:   attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0x1a1a1a, roughness: 0.38, metalness: 0.4,  envMapIntensity: 0.9 }), { fresnelColor: 0x6688ff, fresnelIntensity: 0.5 }),
+  blue:    attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0x1e6fff, roughness: 0.28, metalness: 0.3,  envMapIntensity: 0.9 }), { fresnelColor: 0x99ccff }),
+  yellow:  attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0xffd60a, roughness: 0.28, metalness: 0.2,  envMapIntensity: 0.8 }), { fresnelColor: 0xffee88 }),
+  magenta: attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0xff2d9b, roughness: 0.28, metalness: 0.3,  envMapIntensity: 0.9 }), { fresnelColor: 0xff99dd }),
+  cyan:    attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0x00c8ff, roughness: 0.28, metalness: 0.35, envMapIntensity: 0.9 }), { fresnelColor: 0x99f0ff }),
+  chrome:  attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: 1.0,  envMapIntensity: 1.6, clearcoat: 1.0, clearcoatRoughness: 0.05 }), { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 })
 };
 
 const god = new THREE.Group();
 scene.add(god);
+
+// Every hard-edged BoxGeometry on the sculpture below is swapped for
+// RoundedBoxGeometry through this helper — same width/height/depth API,
+// plus `segments` (bevel smoothness) and `radius` (bevel size). radius is
+// derived from each box's own smallest dimension so thin pieces (like the
+// 0.11-tall panel plates) never get a bevel bigger than the piece itself.
+function rbox(w, h, d, segments = 3, radiusFrac = 0.16) {
+  const radius = Math.min(w, h, d) * radiusFrac;
+  return new RoundedBoxGeometry(w, h, d, segments, radius);
+}
 
 const cylR = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.45, 32), M.red);
 cylR.position.set(0, 3.5, 0); god.add(cylR);
@@ -798,25 +1018,25 @@ cylG.position.set(0, 2.95, 0); god.add(cylG);
 const cylW = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 1.05, 32), M.white);
 cylW.position.set(0, 2.1, 0); god.add(cylW);
 
-const core = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.55, 1.55), M.black);
+const core = new THREE.Mesh(rbox(2.4, 0.55, 1.55), M.black);
 core.position.set(0, 1.35, 0); god.add(core);
 
-const heart = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.85, 1.05), M.blue);
+const heart = new THREE.Mesh(rbox(1.5, 0.85, 1.05), M.blue);
 heart.position.set(0.5, 0.65, -0.15);
 heart.rotation.z = -0.28; god.add(heart);
 
-const yBody = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.65, 2.1), M.yellow);
+const yBody = new THREE.Mesh(rbox(2.7, 0.65, 2.1), M.yellow);
 yBody.position.set(-1.75, -0.45, 0.25); god.add(yBody);
 
-const yWing = new THREE.Mesh(new THREE.BoxGeometry(0.65, 1.5, 2.1), M.yellow);
+const yWing = new THREE.Mesh(rbox(0.65, 1.5, 2.1), M.yellow);
 yWing.position.set(-2.8, 0.2, 0.25); god.add(yWing);
 
-const rShell = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.95, 2.5), M.red);
+const rShell = new THREE.Mesh(rbox(3.2, 0.95, 2.5), M.red);
 rShell.position.set(-1.85, -0.8, 0.2); god.add(rShell);
 
 for (let i = 0; i < (isMobile ? 5 : 7); i++) {
   const p = new THREE.Mesh(
-    new THREE.BoxGeometry(1.4 + Math.random()*0.8, 0.11, 1.6 + Math.random()*0.9),
+    rbox(1.4 + Math.random()*0.8, 0.11, 1.6 + Math.random()*0.9, 2),
     M.magenta
   );
   p.position.set(2.1 + Math.random()*1.3, 0.7 + Math.random()*1.8, -0.7 + Math.random()*1.8);
@@ -829,8 +1049,8 @@ const soul = new THREE.Group();
 const colors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
 for (let i = 0; i < 6; i++) {
   const s = new THREE.Mesh(
-    new THREE.BoxGeometry(0.17, 1.4, 0.65),
-    new THREE.MeshStandardMaterial({ color: colors[i], roughness: 0.28, metalness: 0.35 })
+    rbox(0.17, 1.4, 0.65, 2),
+    attachFresnelNoise(new THREE.MeshPhysicalMaterial({ color: colors[i], roughness: 0.28, metalness: 0.35, envMapIntensity: 0.9 }), { fresnelColor: colors[i], fresnelIntensity: 0.3 })
   );
   s.position.x = (i - 2.5) * 0.18;
   soul.add(s);
@@ -844,7 +1064,7 @@ eye.position.set(0.85, 0.05, 0.95);
 eye.rotation.set(1.05, 0.35, 0.15);
 god.add(eye);
 
-const shard = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.7, 0.45), M.black);
+const shard = new THREE.Mesh(rbox(0.22, 1.7, 0.45, 2), M.black);
 shard.position.set(-0.55, 0.35, -1.2);
 shard.rotation.set(0.18, 0.45, -0.35);
 god.add(shard);
@@ -853,14 +1073,46 @@ const debrisCount = isMobile ? 16 : 28;
 for (let i = 0; i < debrisCount; i++) {
   const s = 0.12 + Math.random() * 0.35;
   const m = new THREE.Mesh(
-    new THREE.BoxGeometry(s, s*(0.35+Math.random()*0.5), s),
+    rbox(s, s*(0.35+Math.random()*0.5), s, 2),
     [M.green,M.blue,M.yellow,M.cyan,M.magenta,M.red][i%6]
   );
   m.position.set((Math.random()-0.5)*9, (Math.random()-0.5)*6, (Math.random()-0.5)*8);
   m.rotation.set(Math.random()*3, Math.random()*3, Math.random()*3);
-  m.userData = { phase: Math.random()*6.28, speed: 0.15 + Math.random()*0.4 };
+  m.userData = { phase: Math.random()*6.28, speed: 0.15 + Math.random()*0.4, debris: true };
   god.add(m);
 }
+
+// castShadow/receiveShadow are per-mesh flags that opt each piece into the
+// shadow-map render pass we turned on earlier — desktop only, same
+// reasoning as the light.castShadow flag above.
+if (!isMobile) {
+  god.traverse(child => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+}
+
+// ===== BOX3 COLLISION SETUP =====
+// geometry.boundingBox never changes after creation (only the mesh's
+// position/rotation does), so we compute each debris chunk's local
+// half-extent ONCE here and reuse it forever. `box` is a single Box3
+// instance per chunk, re-anchored to the chunk's current position every
+// frame in animate() — this avoids allocating a new Box3 object 28 times
+// per frame (that's 1,680 garbage-collected objects/sec at 60fps for
+// nothing; reusing one instance per chunk means zero allocations in the
+// hot loop).
+const debrisMeshes = [];
+god.traverse(child => {
+  if (child.userData?.debris) {
+    child.geometry.computeBoundingBox();
+    const bb = child.geometry.boundingBox;
+    child.userData.halfSize = new THREE.Vector3().subVectors(bb.max, bb.min).multiplyScalar(0.5);
+    child.userData.box = new THREE.Box3();
+    debrisMeshes.push(child);
+  }
+});
 
 const COUNT = isMobile ? 250 : 500;
 const posArr = new Float32Array(COUNT * 3);
@@ -967,6 +1219,7 @@ darkToggle.addEventListener('click', () => {
   const isDark = document.body.classList.toggle('dark');
   const bg = isDark ? DARK_BG : LIGHT_BG;
   scene.background = new THREE.Color(bg);
+  scene.fog.color.set(bg);
   renderer.setClearColor(bg, 1);
   darkToggle.innerHTML = isDark ? ICON_SUN : ICON_MOON;
   darkToggle.setAttribute('aria-pressed', String(isDark));
@@ -1074,34 +1327,121 @@ renderer.domElement.addEventListener('pointerup', e => {
   if (hotspot) activateHotspot(hotspot, e.clientX, e.clientY);
 });
 
+// A single shared Perlin noise field. noise.noise(x,y,z) returns a smooth,
+// non-periodic value roughly in [-1, 1]. Feeding it a slowly-advancing
+// "time" coordinate on one axis (nt below) and a fixed offset on another
+// (so different pieces sample different parts of the field) is the
+// standard way to drive continuous organic motion instead of a sine wave,
+// which always looks like a metronome once you watch it for more than a
+// few seconds — noise never repeats the same way twice.
+const noise = new ImprovedNoise();
+
+// Reusable scratch objects for the Box3 systems below — allocated once,
+// mutated in place every frame. Creating new Vector3/Box3/Sphere instances
+// inside animate() would mean thousands of garbage-collected objects per
+// second; reusing these instead keeps the hot loop allocation-free.
+const collisionPush = new THREE.Vector3();
+const worldPosTmp = new THREE.Vector3();
+const sculptureBox = new THREE.Box3();
+const sculptureSphere = new THREE.Sphere();
+const camDir = new THREE.Vector3();
+let minSafeDistance = controls.minDistance;
+let framingCounter = 0;
+
 let t = 0;
 let focusPoint = new THREE.Vector3(0, 0.8, 0); // camera target eases toward this each frame
 function animate() {
   requestAnimationFrame(animate);
   t += 0.009;
 
+  // Push the current clock into every fresnel/noise shader's uTime uniform.
+  // (Empty array on mobile, since attachFresnelNoise() never ran there —
+  // this loop is then a no-op, effectively free.)
+  for (let i = 0; i < shaderMaterials.length; i++) shaderMaterials[i].uniforms.uTime.value = t;
+
   if (!prefersReducedMotion) {
-    god.rotation.y = 0.35 + Math.sin(t * 0.22) * 0.12;
-    god.rotation.x = -0.18 + Math.sin(t * 0.16) * 0.06;
-    god.position.y = Math.sin(t * 0.55) * 0.25;
+    const nt = t * 0.12;
+    god.rotation.y = 0.35 + noise.noise(nt, 0, 0) * 0.4;
+    god.rotation.x = -0.18 + noise.noise(nt, 50, 0) * 0.18;
+    god.position.y = noise.noise(nt, 100, 0) * 0.45;
   } else {
     god.rotation.y = 0.35;
     god.rotation.x = -0.18;
   }
 
   god.children.forEach(c => {
-    if (c.userData?.base) {
-      const u = c.userData;
-      if (prefersReducedMotion) return;
-      c.position.x = u.base.x + Math.sin(t * u.speed + u.phase) * 0.3;
-      c.position.y = u.base.y + Math.cos(t * u.speed * 0.7 + u.phase) * 0.35;
+    const u = c.userData;
+    if (prefersReducedMotion || !u) return;
+    if (u.base) {
+      // Floating panel pieces: noise-driven drift around their base position.
+      const nt2 = t * u.speed * 0.3 + u.phase;
+      c.position.x = u.base.x + noise.noise(nt2, u.phase, 0) * 0.35;
+      c.position.y = u.base.y + noise.noise(nt2, u.phase + 30, 0) * 0.4;
+    } else if (u.debris) {
+      // Debris chunks: slow noise-driven tumble instead of sitting inert.
+      const nt2 = t * u.speed * 0.2 + u.phase;
+      c.rotation.x += noise.noise(nt2, u.phase, 0) * 0.004;
+      c.rotation.y += noise.noise(nt2, u.phase + 20, 0) * 0.004;
     }
   });
 
+  if (!prefersReducedMotion) {
+    // Debris positions just changed above, and the god group itself has its
+    // own rotation/bob — matrixWorld needs a fresh recompute before we can
+    // ask any debris chunk for its true WORLD position below.
+    god.updateMatrixWorld(true);
+
+    // ===== GROUND COLLISION (Box3, world-space) =====
+    // Debris live in god's local space, but the floor is a fixed world-space
+    // plane — so each check has to go through getWorldPosition(), not the
+    // raw .position. If a chunk's bottom face would sink below the floor,
+    // we clamp it back up in world space, then convert that clamped point
+    // back into god's local space with worldToLocal() before writing it to
+    // .position (since .position is interpreted in the parent's — god's —
+    // local coordinate system).
+    const groundY = ground.position.y;
+    for (const m of debrisMeshes) {
+      m.getWorldPosition(worldPosTmp);
+      const halfY = m.userData.halfSize.y;
+      if (worldPosTmp.y - halfY < groundY) {
+        worldPosTmp.y = groundY + halfY;
+        god.worldToLocal(worldPosTmp);
+        m.position.y = worldPosTmp.y;
+      }
+    }
+
+    // ===== DEBRIS-VS-DEBRIS COLLISION (Box3, local-space) =====
+    // All debris share the same parent (god), so their raw .position values
+    // already live in one common coordinate frame — no world-space
+    // conversion needed here, just an axis-aligned box per chunk re-anchored
+    // to its current position, checked pairwise with Box3.intersectsBox().
+    // This ignores each chunk's individual rotation (a true rotated-box
+    // check would mean transforming 8 corners per chunk); for small
+    // slow-tumbling decorative debris the axis-aligned approximation is
+    // visually indistinguishable and ~10x cheaper.
+    for (const m of debrisMeshes) {
+      m.userData.box.copy(m.geometry.boundingBox).translate(m.position);
+    }
+    for (let i = 0; i < debrisMeshes.length; i++) {
+      const a = debrisMeshes[i];
+      for (let j = i + 1; j < debrisMeshes.length; j++) {
+        const b = debrisMeshes[j];
+        if (a.userData.box.intersectsBox(b.userData.box)) {
+          collisionPush.subVectors(a.position, b.position);
+          if (collisionPush.lengthSq() < 1e-6) collisionPush.set(0.01, 0, 0); // exact-overlap edge case: nudge apart along an arbitrary axis
+          collisionPush.normalize().multiplyScalar(0.012);
+          a.position.add(collisionPush);
+          b.position.sub(collisionPush);
+        }
+      }
+    }
+  }
+
   const arr = particles.geometry.attributes.position.array;
   for (let i = 0; i < COUNT; i++) {
-    arr[i*3]   += Math.sin(t * 0.5 + i) * 0.0015;
-    arr[i*3+1] += Math.cos(t * 0.4 + i) * 0.001;
+    const nt3 = t * 0.25 + i * 0.37;
+    arr[i*3]   += noise.noise(nt3, i, 0) * 0.002;
+    arr[i*3+1] += noise.noise(nt3, i + 500, 0) * 0.0015;
   }
   particles.geometry.attributes.position.needsUpdate = true;
   if (!prefersReducedMotion) particles.rotation.y += 0.0008;
@@ -1118,6 +1458,32 @@ function animate() {
   // Ease the orbit target toward whatever hotspot was last tapped (or back
   // to center once a panel closes and resets focusPoint).
   controls.target.lerp(focusPoint, 0.05);
+
+  // ===== AUTO-FRAMING CAMERA (Box3) =====
+  // Only runs during idle auto-rotate — controls.autoRotate gets set to
+  // false the moment a hotspot grabs focus (see activateHotspot() above),
+  // so this never fights the camera tween into a hotspot.
+  // Recomputed every 6th frame only: the sculpture's silhouette changes
+  // slowly from the noise-driven motion, so a fresh Box3 every single
+  // frame would be wasted work for an imperceptible difference.
+  // Deliberately one-directional: it only pushes the camera BACK when the
+  // sculpture's current bounding sphere no longer fits the view, and never
+  // pulls the camera in — so a viewer who manually zoomed out for a wider
+  // shot never gets fought back to some "ideal" distance.
+  if (!prefersReducedMotion && controls.autoRotate) {
+    framingCounter++;
+    if (framingCounter % 6 === 0) {
+      sculptureBox.setFromObject(god);
+      sculptureBox.getBoundingSphere(sculptureSphere);
+      minSafeDistance = (sculptureSphere.radius * 1.15) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    }
+    const currentDistance = camera.position.distanceTo(controls.target);
+    if (currentDistance < minSafeDistance) {
+      const nextDistance = THREE.MathUtils.lerp(currentDistance, minSafeDistance, 0.04);
+      camDir.copy(camera.position).sub(controls.target).normalize();
+      camera.position.copy(controls.target).addScaledVector(camDir, nextDistance);
+    }
+  }
 
   controls.update();
   if (composer) {
