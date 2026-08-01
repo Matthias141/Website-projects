@@ -383,6 +383,13 @@
   }
   .tool-btn:hover{background:rgba(255,255,255,0.9)}
   .tool-btn:active{transform:scale(0.92)}
+  .tool-btn svg{
+    width:16px;height:16px;
+    display:block;
+    color:#111;
+    transition:color .2s;
+  }
+  body.dark .tool-btn svg{color:#f0f0f0}
   body.dark .tool-btn{
     border-color:rgba(255,255,255,0.15);
     background:rgba(30,30,30,0.7);
@@ -440,8 +447,8 @@
         <a href="#" data-panel="contact">Contact</a>
       </nav>
       <div class="toolbar">
-        <button class="tool-btn" id="darkToggle" aria-label="Toggle dark mode" aria-pressed="false">🌙</button>
-        <button class="tool-btn" id="soundToggle" aria-label="Toggle ambient sound" aria-pressed="false">🔈</button>
+        <button class="tool-btn" id="darkToggle" aria-label="Toggle dark mode" aria-pressed="false"></button>
+        <button class="tool-btn" id="soundToggle" aria-label="Toggle ambient sound" aria-pressed="false"></button>
       </div>
       <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -750,7 +757,17 @@ function initAudio() {
   });
 }
 
+// ===== ICONS: Lucide (MIT/ISC) — moon / sun / volume-2 / volume-x =====
+// Same stroke-based line style used across the set, so these render crisply
+// at 16px and inherit color via currentColor for the dark-mode swap.
+const SVG_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const ICON_MOON = `<svg ${SVG_ATTRS}><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>`;
+const ICON_SUN = `<svg ${SVG_ATTRS}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+const ICON_SOUND_ON = `<svg ${SVG_ATTRS}><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>`;
+const ICON_SOUND_OFF = `<svg ${SVG_ATTRS}><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>`;
+
 const soundToggle = document.getElementById('soundToggle');
+soundToggle.innerHTML = ICON_SOUND_OFF;
 soundToggle.addEventListener('click', () => {
   if (!audioCtx) initAudio();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -760,18 +777,19 @@ soundToggle.addEventListener('click', () => {
   masterGain.gain.cancelScheduledValues(now);
   masterGain.gain.setTargetAtTime(soundOn ? 0.45 : 0, now, 0.4);
 
-  soundToggle.textContent = soundOn ? '🔊' : '🔈';
+  soundToggle.innerHTML = soundOn ? ICON_SOUND_ON : ICON_SOUND_OFF;
   soundToggle.setAttribute('aria-pressed', String(soundOn));
 });
 
 // ===== DARK MODE TOGGLE =====
 const darkToggle = document.getElementById('darkToggle');
+darkToggle.innerHTML = ICON_MOON;
 darkToggle.addEventListener('click', () => {
   const isDark = document.body.classList.toggle('dark');
   const bg = isDark ? DARK_BG : LIGHT_BG;
   scene.background = new THREE.Color(bg);
   renderer.setClearColor(bg, 1);
-  darkToggle.textContent = isDark ? '☀️' : '🌙';
+  darkToggle.innerHTML = isDark ? ICON_SUN : ICON_MOON;
   darkToggle.setAttribute('aria-pressed', String(isDark));
 });
 
