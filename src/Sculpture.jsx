@@ -201,7 +201,9 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       {debris.map((d, i) => (
         <mesh
           key={i}
-          ref={(el) => (debrisRefs.current[i] = el)}
+          ref={(el) => {
+            debrisRefs.current[i] = el;
+          }}
           position={d.position}
           rotation={d.rotation}
           geometry={d.geometry}
