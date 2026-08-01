@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -88,6 +88,23 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     () => [...Object.values(M), ...soulMaterials].filter((m) => m.userData),
     [M, soulMaterials]
   );
+
+  // ===== STATIC BODY GEOMETRIES =====
+  // Built once via rbox() and disposed on unmount, instead of calling rbox()
+  // inline in JSX (which would allocate + upload new GPU buffers every render).
+  const G = useMemo(() => ({
+    torso: rbox(2.4, 0.55, 1.55),
+    arm: rbox(1.5, 0.85, 1.05),
+    hipA: rbox(2.7, 0.65, 2.1),
+    hipB: rbox(0.65, 1.5, 2.1),
+    base: rbox(3.2, 0.95, 2.5),
+    soul: rbox(0.17, 1.4, 0.65, 2),
+    spine: rbox(0.22, 1.7, 0.45, 2),
+  }), []);
+
+  useEffect(() => () => {
+    Object.values(G).forEach((g) => g.dispose());
+  }, [G]);
 
   const t = useRef(0);
 
@@ -180,15 +197,15 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       <mesh position={[0, 2.1, 0]} material={M.white} castShadow={!isMobile} receiveShadow={!isMobile}>
         <cylinderGeometry args={[1.35, 1.35, 1.05, 32]} />
       </mesh>
-      <mesh position={[0, 1.35, 0]} material={M.black} geometry={rbox(2.4, 0.55, 1.55)} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[0.5, 0.65, -0.15]} rotation={[0, 0, -0.28]} material={M.blue} geometry={rbox(1.5, 0.85, 1.05)} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-1.75, -0.45, 0.25]} material={M.yellow} geometry={rbox(2.7, 0.65, 2.1)} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-2.8, 0.2, 0.25]} material={M.yellow} geometry={rbox(0.65, 1.5, 2.1)} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-1.85, -0.8, 0.2]} material={M.red} geometry={rbox(3.2, 0.95, 2.5)} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[0, 1.35, 0]} material={M.black} geometry={G.torso} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[0.5, 0.65, -0.15]} rotation={[0, 0, -0.28]} material={M.blue} geometry={G.arm} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[-1.75, -0.45, 0.25]} material={M.yellow} geometry={G.hipA} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[-2.8, 0.2, 0.25]} material={M.yellow} geometry={G.hipB} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[-1.85, -0.8, 0.2]} material={M.red} geometry={G.base} castShadow={!isMobile} receiveShadow={!isMobile} />
 
       <group position={[0.85, -1.05, 0.85]} rotation={[0.35, 0.65, -0.25]}>
         {soulColors.map((c, i) => (
-          <mesh key={i} position={[(i - 2.5) * 0.18, 0, 0]} geometry={rbox(0.17, 1.4, 0.65, 2)} material={soulMaterials[i]} castShadow={!isMobile} receiveShadow={!isMobile} />
+          <mesh key={i} position={[(i - 2.5) * 0.18, 0, 0]} geometry={G.soul} material={soulMaterials[i]} castShadow={!isMobile} receiveShadow={!isMobile} />
         ))}
       </group>
 
@@ -196,7 +213,7 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
         <torusGeometry args={[0.5, 0.11, 16, 32]} />
       </mesh>
 
-      <mesh position={[-0.55, 0.35, -1.2]} rotation={[0.18, 0.45, -0.35]} material={M.black} geometry={rbox(0.22, 1.7, 0.45, 2)} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[-0.55, 0.35, -1.2]} rotation={[0.18, 0.45, -0.35]} material={M.black} geometry={G.spine} castShadow={!isMobile} receiveShadow={!isMobile} />
 
       {debris.map((d, i) => (
         <mesh

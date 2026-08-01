@@ -1,7 +1,23 @@
-import { useMemo } from 'react';
+import { Component, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, N8AO } from '@react-three/postprocessing';
 import { SSREffect } from 'screen-space-reflections';
+
+// Catches SSR construction/render failures so a bad GPU/driver combo drops
+// only the SSR pass instead of crashing the whole canvas — see the SSR
+// component docstring below for why this pass is unverified in a browser.
+class SSRBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error) {
+    console.warn('SSR effect failed, falling back to N8AO + Bloom only:', error);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 /**
  * `screen-space-reflections` predates @react-three/postprocessing's
@@ -50,7 +66,9 @@ export default function Effects({ isMobile }) {
   return (
     <EffectComposer multisampling={0}>
       <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
-      <SSR />
+      <SSRBoundary>
+        <SSR />
+      </SSRBoundary>
       <Bloom intensity={0.28} luminanceThreshold={0.4} luminanceSmoothing={0.88} mipmapBlur />
     </EffectComposer>
   );
