@@ -4,6 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ifedayo Idowu — Portfolio</title>
+
+<!-- ===== SEO / SHARE METADATA =====
+     Replace the *.example URLs below with your real domain once it's live —
+     og:image in particular needs a real hosted screenshot (1200x630) or
+     link previews on X/LinkedIn/iMessage will just show a blank card. -->
+<meta name="description" content="Ifedayo Idowu — DevOps/Cloud engineer and creative technologist based in Umuahia, Nigeria. GitOps platforms, Kubernetes, generative 3D art, and systems tooling.">
+<link rel="canonical" href="https://your-domain.example/">
+<meta name="theme-color" content="#f0f0f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ifedayo Idowu — Creative Technologist & Systems Engineer">
+<meta property="og:description" content="DevOps/Cloud engineer and creative technologist. GitOps, Kubernetes, generative 3D art, and systems tooling from Umuahia, Nigeria.">
+<meta property="og:url" content="https://your-domain.example/">
+<meta property="og:image" content="https://your-domain.example/og-image.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@Raw_Chrome">
+<meta name="twitter:title" content="Ifedayo Idowu — Creative Technologist & Systems Engineer">
+<meta name="twitter:description" content="DevOps/Cloud engineer and creative technologist. GitOps, Kubernetes, generative 3D art, and systems tooling from Umuahia, Nigeria.">
+<meta name="twitter:image" content="https://your-domain.example/og-image.png">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,6 +44,51 @@
 
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
+
+  /* Respect OS-level "reduce motion" — covers every CSS transition/animation
+     in this file (panel slides, hero fade, loader, tool-btn). The 3D scene's
+     own motion (auto-rotate, camera tweens) is gated separately in JS since
+     it isn't CSS-driven. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
+  .skip-link{
+    position:fixed;
+    top:-60px;left:12px;
+    z-index:200;
+    background:#111;
+    color:#f0f0f0;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:500;
+    border-radius:4px;
+    text-decoration:none;
+    transition:top .2s ease;
+  }
+  .skip-link:focus{top:12px}
+
+  :focus-visible{
+    outline:2px solid #111;
+    outline-offset:3px;
+    border-radius:2px;
+  }
+  body.dark :focus-visible{outline-color:#f0f0f0}
 
   html,body{
     width:100%;height:100%;
@@ -197,20 +266,48 @@
   }
   #panel-overlay.active{display:block}
 
+  /* Case studies use native <details>/<summary> — free keyboard support
+     (Enter/Space toggles, no JS needed) and screen readers announce the
+     expanded/collapsed state automatically. */
   .work-item{
-    padding:18px 0;
     border-bottom:1px solid #e8e8e8;
   }
   .work-item:last-child{border-bottom:none}
-  .work-item h3{
+  .work-item summary{
+    list-style:none;
+    cursor:pointer;
+    padding:18px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+  }
+  .work-item summary::-webkit-details-marker{display:none}
+  .work-item summary h3{
     font-size:16px;
     font-weight:600;
     margin-bottom:4px;
   }
-  .work-item span{
+  .work-item summary span{
     font-size:13px;
     opacity:0.55;
   }
+  .work-item summary svg{
+    flex-shrink:0;
+    width:16px;height:16px;
+    opacity:0.5;
+    transition:transform .3s ease;
+  }
+  .work-item[open] summary svg{transform:rotate(180deg)}
+  .work-detail{
+    padding:0 0 20px;
+    font-size:14px;
+    line-height:1.65;
+    opacity:0.85;
+  }
+  .work-detail p{margin-bottom:10px}
+  .work-detail p:last-child{margin-bottom:0}
+  .work-detail strong{opacity:1;font-weight:600}
 
   .skills-grid{
     display:grid;
@@ -333,6 +430,28 @@
   }
   #drag-hint.visible{opacity:0.45}
 
+  /* ===== SCULPTURE HOTSPOT TOOLTIP ===== */
+  #hotspot-tooltip{
+    position:fixed;
+    z-index:20;
+    left:0;top:0;
+    transform:translate(-50%,-150%);
+    background:#111;
+    color:#f0f0f0;
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:7px 12px;
+    border-radius:5px;
+    white-space:nowrap;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  #hotspot-tooltip.visible{opacity:1;transform:translate(-50%,-165%)}
+  body.dark #hotspot-tooltip{background:#f0f0f0;color:#111}
+
   /* ===== DARK MODE ===== */
   body.dark{background:#0e0e0e;color:#f0f0f0}
   body.dark .topbar{background:linear-gradient(to bottom,rgba(14,14,14,0.95),rgba(14,14,14,0))}
@@ -419,8 +538,16 @@
 </head>
 <body>
 
+<a href="#panel-nav" class="skip-link">Skip to navigation</a>
+
+<!-- The 3D sculpture is decorative/interactive extra credit, not primary content —
+     screen reader users get the same info via the nav panels below. -->
+<p class="sr-only">This page features an interactive 3D sculpture (GODFORM) in the background. It is decorative — all content is available through the navigation links.</p>
+
 <!-- Overlay sits at z-index:9, above canvas (z:1), below panels (z:10) -->
 <div id="panel-overlay"></div>
+
+<div id="hotspot-tooltip" role="status" aria-live="polite"></div>
 
 <!-- ===== LOADING SCREEN =====
      No external textures are loaded here (the sculpture is procedural geometry),
@@ -434,13 +561,13 @@
   <div class="loader-label" id="loaderLabel">LOADING 0%</div>
 </div>
 
-<div id="drag-hint">DRAG TO EXPLORE</div>
+<div id="drag-hint">DRAG TO EXPLORE · TAP A PIECE</div>
 
 <div id="ui">
   <div class="topbar">
     <div class="logo">Ifedayo Idowu</div>
     <div class="topbar-right">
-      <nav class="nav-desktop">
+      <nav class="nav-desktop" id="panel-nav">
         <a href="#" data-panel="about">About</a>
         <a href="#" data-panel="work">Work</a>
         <a href="#" data-panel="skills">Skills</a>
@@ -470,33 +597,79 @@
 
   <div id="status">LOADING...</div>
 
-  <div class="panel" id="panel-about">
-    <button class="close" data-close>×</button>
-    <h2>About</h2>
+  <div class="panel" id="panel-about" role="dialog" aria-modal="true" aria-labelledby="panel-about-title">
+    <button class="close" data-close aria-label="Close panel">×</button>
+    <h2 id="panel-about-title">About</h2>
     <p>I'm Ifedayo Idowu — a DevOps/Cloud Engineer, creative technologist, and digital builder based in Umuahia, Nigeria.</p>
     <p>On the infrastructure side, I design and ship GitOps platforms, CI/CD pipelines, and Kubernetes workloads on AWS and Oracle Cloud — with a security-first approach covering IAM hardening, container scanning, and policy enforcement. Currently building Foundry, a production GitOps platform running real workloads.</p>
     <p>On the creative side, I build things that live on-chain and on-screen — generative sculpture, procedural motion, and digital experiences with their own internal logic. GODFORM is one of them.</p>
     <p>Also exploring: systems programming in C++ and Rust, AI image generation, and tools built for builders on the African continent.</p>
   </div>
 
-  <div class="panel" id="panel-work">
-    <button class="close" data-close>×</button>
-    <h2>Selected Work</h2>
-    <div class="work-item">
-      <h3>Godform</h3>
-      <span>Interactive 3D Experience — 2026</span>
-      <p style="margin-top:8px;font-size:14px;opacity:0.7">A living geometric organism built with Three.js. Procedural motion, particle systems, and cinematic post-processing.</p>
-    </div>
-    <div class="work-item">
-      <h3>Systems &amp; Tooling</h3>
-      <span>Low-level C++ / Cryptography</span>
-      <p style="margin-top:8px;font-size:14px;opacity:0.7">Production-grade implementations from first principles — hashing, concurrency, memory systems, and experimental tooling.</p>
-    </div>
-    <div class="work-item">
-      <h3>Generative Experiments</h3>
-      <span>WebGL / Creative Coding</span>
-      <p style="margin-top:8px;font-size:14px;opacity:0.7">Ongoing series of real-time visual systems exploring form, chaos, and structured randomness.</p>
-    </div>
+  <div class="panel" id="panel-work" role="dialog" aria-modal="true" aria-labelledby="panel-work-title">
+    <button class="close" data-close aria-label="Close panel">×</button>
+    <h2 id="panel-work-title">Selected Work</h2>
+
+    <details class="work-item" open>
+      <summary>
+        <div>
+          <h3>Godform</h3>
+          <span>Interactive 3D Experience — 2026</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="work-detail">
+        <p><strong>What it is —</strong> A living geometric organism built with Three.js: procedural motion, particle systems, and cinematic post-processing, rendered live in the browser on this page.</p>
+        <p><strong>Stack —</strong> Three.js, WebGL, custom OrbitControls tuning, UnrealBloom post-processing.</p>
+        <p><strong>Outcome —</strong> <!-- TODO: replace with a real number/result — e.g. load time, a specific technical constraint you solved (mobile GPU budget, bloom pass cost), or where it's been shown. --><em>Add a concrete result here — what this project actually proved or shipped.</em></p>
+      </div>
+    </details>
+
+    <details class="work-item">
+      <summary>
+        <div>
+          <h3>Foundry</h3>
+          <span>GitOps Platform — In Progress</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="work-detail">
+        <p><strong>Problem —</strong> <!-- TODO --><em>What was manual, slow, or insecure before Foundry?</em></p>
+        <p><strong>Approach —</strong> GitOps-driven deployment pipeline across AWS and Oracle Cloud, with IAM hardening, container scanning, and policy enforcement built in from the start.</p>
+        <p><strong>Stack —</strong> Kubernetes, Terraform, Docker, GitHub Actions CI/CD.</p>
+        <p><strong>Outcome —</strong> <!-- TODO --><em>Add a specific result — deploy time reduced, workloads migrated, incidents caught pre-prod, etc.</em></p>
+      </div>
+    </details>
+
+    <details class="work-item">
+      <summary>
+        <div>
+          <h3>Systems &amp; Tooling</h3>
+          <span>Low-level C++ / Cryptography</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="work-detail">
+        <p><strong>What it is —</strong> Production-grade implementations from first principles — hashing, concurrency, and memory systems built without relying on high-level abstractions.</p>
+        <p><strong>Stack —</strong> C++, Rust, Go.</p>
+        <p><strong>Outcome —</strong> <!-- TODO --><em>Name a specific tool or benchmark — what does it do, and how fast/correct is it?</em></p>
+      </div>
+    </details>
+
+    <details class="work-item">
+      <summary>
+        <div>
+          <h3>Generative Experiments</h3>
+          <span>WebGL / Creative Coding</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="work-detail">
+        <p><strong>What it is —</strong> An ongoing series of real-time visual systems exploring form, chaos, and structured randomness.</p>
+        <p><strong>Outcome —</strong> <!-- TODO --><em>Link 2-3 specific pieces here once they're hosted somewhere permanent.</em></p>
+      </div>
+    </details>
+
     <!-- The full body of work lives elsewhere — point people to it rather than
          trying to cram an "extensive" archive into this single-page piece. -->
     <a class="cv-btn" href="https://your-full-portfolio-url.example" target="_blank" rel="noopener" style="margin-top:8px">
@@ -504,9 +677,9 @@
     </a>
   </div>
 
-  <div class="panel" id="panel-skills">
-    <button class="close" data-close>×</button>
-    <h2>Skills</h2>
+  <div class="panel" id="panel-skills" role="dialog" aria-modal="true" aria-labelledby="panel-skills-title">
+    <button class="close" data-close aria-label="Close panel">×</button>
+    <h2 id="panel-skills-title">Skills</h2>
     <div class="skills-grid">
       <div class="skill">C++ / Systems</div>
       <div class="skill">Three.js / WebGL</div>
@@ -519,9 +692,9 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-contact">
-    <button class="close" data-close>×</button>
-    <h2>Contact</h2>
+  <div class="panel" id="panel-contact" role="dialog" aria-modal="true" aria-labelledby="panel-contact-title">
+    <button class="close" data-close aria-label="Close panel">×</button>
+    <h2 id="panel-contact-title">Contact</h2>
     <p>Open to collaborations, interesting problems, and conversations about systems, art, and technology.</p>
     <div class="contact-links">
       <a href="https://x.com/Raw_Chrome" target="_blank" rel="noopener">
@@ -553,6 +726,12 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 const status = document.getElementById('status');
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
 
+// Respect OS-level "reduce motion". CSS handles panel/hero/loader transitions
+// (see the global media query in <style>) — this flag gates the parts of the
+// scene that are driven by JS instead: auto-rotate, the idle bob/sway, and
+// the camera tween when a sculpture hotspot is tapped.
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function vw(){ return window.innerWidth; }
 function vh(){ return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
 
@@ -581,7 +760,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 0.8, 0);
-controls.autoRotate = true;
+controls.autoRotate = !prefersReducedMotion;
 controls.autoRotateSpeed = 0.35;
 controls.enablePan = false;
 controls.minDistance = 6;
@@ -810,18 +989,110 @@ function onInteractionEnd() {
 controls.addEventListener('start', onInteractionStart);
 controls.addEventListener('end', onInteractionEnd);
 
+// ===== SCULPTURE HOTSPOTS (click/tap parts of GODFORM to jump to the
+// related panel) — turns the sculpture into real navigation, not just
+// decoration. A short tap (little movement, short duration) is treated as
+// a "click"; anything longer/further is an orbit drag and is ignored. =====
+const HOTSPOTS = [
+  { mesh: cylW,  label: 'Godform',               panelId: 'work'    },
+  { mesh: heart, label: 'Foundry / Systems',      panelId: 'about'   },
+  { mesh: yBody, label: 'Generative Experiments', panelId: 'work'    },
+  { mesh: soul,  label: 'Skills',                 panelId: 'skills'  },
+  { mesh: eye,   label: 'Contact',                panelId: 'contact' }
+];
+// Some hotspots (e.g. `soul`) are Groups made of several child meshes —
+// raycasting only hits actual geometry, so map every leaf mesh back to its
+// parent hotspot entry.
+const hotspotMeshMap = new Map();
+HOTSPOTS.forEach(h => {
+  if (h.mesh.isMesh) {
+    hotspotMeshMap.set(h.mesh, h);
+  } else {
+    h.mesh.traverse(child => { if (child.isMesh) hotspotMeshMap.set(child, h); });
+  }
+});
+const hotspotMeshes = [...hotspotMeshMap.keys()];
+
+const raycaster = new THREE.Raycaster();
+const pointerNDC = new THREE.Vector2();
+const tooltip = document.getElementById('hotspot-tooltip');
+let pointerDownAt = null;
+let hotspotTimer = null;
+
+function showTooltip(label, x, y) {
+  tooltip.textContent = label;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+  tooltip.classList.add('visible');
+}
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+}
+
+function activateHotspot(hit, clientX, clientY) {
+  showTooltip(hit.label, clientX, clientY);
+
+  if (!prefersReducedMotion) {
+    const worldPos = new THREE.Vector3();
+    hit.mesh.getWorldPosition(worldPos);
+    focusPoint = worldPos;
+    controls.autoRotate = false;
+  }
+
+  clearTimeout(hotspotTimer);
+  hotspotTimer = setTimeout(() => {
+    hideTooltip();
+    openPanel(hit.panelId);
+  }, 550);
+}
+
+// Reset the camera focus and resume auto-rotate once a panel is closed —
+// called from closePanels() further down.
+function resetSculptureFocus() {
+  focusPoint = new THREE.Vector3(0, 0.8, 0);
+  if (!prefersReducedMotion) controls.autoRotate = true;
+}
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  pointerDownAt = { x: e.clientX, y: e.clientY, t: performance.now() };
+});
+
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!pointerDownAt) return;
+  const moved = Math.hypot(e.clientX - pointerDownAt.x, e.clientY - pointerDownAt.y);
+  const elapsed = performance.now() - pointerDownAt.t;
+  pointerDownAt = null;
+  if (moved > 6 || elapsed > 500) return; // it was a drag, not a tap
+
+  pointerNDC.x = (e.clientX / vw()) * 2 - 1;
+  pointerNDC.y = -(e.clientY / vh()) * 2 + 1;
+  raycaster.setFromCamera(pointerNDC, camera);
+  const hits = raycaster.intersectObjects(hotspotMeshes, false);
+  if (!hits.length) return;
+
+  const hotspot = hotspotMeshMap.get(hits[0].object);
+  if (hotspot) activateHotspot(hotspot, e.clientX, e.clientY);
+});
+
 let t = 0;
+let focusPoint = new THREE.Vector3(0, 0.8, 0); // camera target eases toward this each frame
 function animate() {
   requestAnimationFrame(animate);
   t += 0.009;
 
-  god.rotation.y = 0.35 + Math.sin(t * 0.22) * 0.12;
-  god.rotation.x = -0.18 + Math.sin(t * 0.16) * 0.06;
-  god.position.y = Math.sin(t * 0.55) * 0.25;
+  if (!prefersReducedMotion) {
+    god.rotation.y = 0.35 + Math.sin(t * 0.22) * 0.12;
+    god.rotation.x = -0.18 + Math.sin(t * 0.16) * 0.06;
+    god.position.y = Math.sin(t * 0.55) * 0.25;
+  } else {
+    god.rotation.y = 0.35;
+    god.rotation.x = -0.18;
+  }
 
   god.children.forEach(c => {
     if (c.userData?.base) {
       const u = c.userData;
+      if (prefersReducedMotion) return;
       c.position.x = u.base.x + Math.sin(t * u.speed + u.phase) * 0.3;
       c.position.y = u.base.y + Math.cos(t * u.speed * 0.7 + u.phase) * 0.35;
     }
@@ -833,7 +1104,7 @@ function animate() {
     arr[i*3+1] += Math.cos(t * 0.4 + i) * 0.001;
   }
   particles.geometry.attributes.position.needsUpdate = true;
-  particles.rotation.y += 0.0008;
+  if (!prefersReducedMotion) particles.rotation.y += 0.0008;
 
   // Tie the ambient drone's brightness to the sculpture's own rotation/bob
   if (soundOn && audioVoices.length) {
@@ -843,6 +1114,10 @@ function animate() {
       v.filter.frequency.setTargetAtTime(cutoff, now, 0.4);
     });
   }
+
+  // Ease the orbit target toward whatever hotspot was last tapped (or back
+  // to center once a panel closes and resets focusPoint).
+  controls.target.lerp(focusPoint, 0.05);
 
   controls.update();
   if (composer) {
@@ -910,19 +1185,45 @@ const mobileNav = document.getElementById('mobileNav');
 const menuBtn   = document.getElementById('menuBtn');
 const overlay   = document.getElementById('panel-overlay');
 
+let lastFocusedEl = null;
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+
+function trapFocus(e) {
+  const openPanelEl = document.querySelector('.panel.open');
+  if (!openPanelEl || e.key !== 'Tab') return;
+  const focusable = [...openPanelEl.querySelectorAll(FOCUSABLE_SELECTOR)];
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 function openPanel(id) {
+  lastFocusedEl = document.activeElement;
   panels.forEach(p => p.classList.remove('open'));
   const panel = document.getElementById('panel-' + id);
   if (panel) {
     panel.classList.add('open');
     overlay.classList.add('active');
+    // Move focus into the panel for keyboard/screen-reader users
+    const closeBtn = panel.querySelector('.close');
+    if (closeBtn) closeBtn.focus();
   }
   closeMobileNav();
 }
 
 function closePanels() {
+  const wasOpen = document.querySelector('.panel.open');
   panels.forEach(p => p.classList.remove('open'));
   overlay.classList.remove('active');
+  resetSculptureFocus();
+  if (wasOpen && lastFocusedEl) lastFocusedEl.focus();
 }
 
 function closeMobileNav() {
@@ -947,6 +1248,14 @@ menuBtn.addEventListener('click', () => {
 });
 
 overlay.addEventListener('click', closePanels);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.querySelector('.panel.open')) closePanels();
+    else if (mobileNav.classList.contains('open')) closeMobileNav();
+  }
+  trapFocus(e);
+});
 </script>
 </body>
 </html>
