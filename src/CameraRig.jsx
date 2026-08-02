@@ -19,34 +19,54 @@ const camDir = new THREE.Vector3();
  * fit distance on first measurement and only reacting if the sculpture's
  * bounds grow meaningfully past that baseline later.
  */
-export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd }) {
+export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd, manualRender = false }) {
   const controlsRef = useRef();
   const { camera } = useThree();
   const framingCounter = useRef(0);
   const minSafeDistance = useRef(0);
   const baselineSafeDistance = useRef(null);
 
-  useFrame(() => {
+  // renderPriority=2 (vs. Sculpture's 1): must run AFTER Sculpture.jsx's
+  // useFrame has updated god's rotation/position for this frame, since
+  // sculptureBox.setFromObject(god) below reads god's current world
+  // transform for auto-framing — reading it before Sculpture updates it
+  // would frame against last frame's pose instead of this one's.
+  //
+  // A NON-OBVIOUS side effect of giving ANY useFrame subscriber a positive
+  // priority: @react-three/fiber then skips its own automatic
+  // gl.render(scene, camera) call for the WHOLE canvas, on the assumption
+  // that something with a priority now renders manually (this is exactly
+  // how @react-three/postprocessing's <EffectComposer> already worked —
+  // it renders itself at priority 1). That's true on desktop, where
+  // Effects.jsx mounts an EffectComposer. But Effects.jsx returns null on
+  // mobile — no EffectComposer, nothing else with a priority — so once
+  // Sculpture/CameraRig acquire priorities, mobile would go BLANK without
+  // this fallback: manualRender (App.jsx passes isMobile) makes this the
+  // one manual render call mobile still needs, run last since this is the
+  // higher of the two priorities.
+  useFrame((state) => {
     const controls = controlsRef.current;
     const god = targetRef.current;
-    if (!controls || !god || prefersReducedMotion || !controls.autoRotate) return;
+    if (controls && god && !prefersReducedMotion && controls.autoRotate) {
+      framingCounter.current++;
+      if (framingCounter.current % 6 === 0) {
+        sculptureBox.setFromObject(god);
+        sculptureBox.getBoundingSphere(sculptureSphere);
+        minSafeDistance.current = sculptureSphere.radius / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        if (baselineSafeDistance.current === null) baselineSafeDistance.current = minSafeDistance.current;
+      }
 
-    framingCounter.current++;
-    if (framingCounter.current % 6 === 0) {
-      sculptureBox.setFromObject(god);
-      sculptureBox.getBoundingSphere(sculptureSphere);
-      minSafeDistance.current = sculptureSphere.radius / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-      if (baselineSafeDistance.current === null) baselineSafeDistance.current = minSafeDistance.current;
+      const currentDistance = camera.position.distanceTo(controls.target);
+      const growthTriggered = minSafeDistance.current > baselineSafeDistance.current * 1.12;
+      if (growthTriggered && currentDistance < minSafeDistance.current) {
+        const nextDistance = THREE.MathUtils.lerp(currentDistance, minSafeDistance.current, 0.04);
+        camDir.copy(camera.position).sub(controls.target).normalize();
+        camera.position.copy(controls.target).addScaledVector(camDir, nextDistance);
+      }
     }
 
-    const currentDistance = camera.position.distanceTo(controls.target);
-    const growthTriggered = minSafeDistance.current > baselineSafeDistance.current * 1.12;
-    if (growthTriggered && currentDistance < minSafeDistance.current) {
-      const nextDistance = THREE.MathUtils.lerp(currentDistance, minSafeDistance.current, 0.04);
-      camDir.copy(camera.position).sub(controls.target).normalize();
-      camera.position.copy(controls.target).addScaledVector(camDir, nextDistance);
-    }
-  });
+    if (manualRender) state.gl.render(state.scene, state.camera);
+  }, 2);
 
   return (
     <OrbitControls

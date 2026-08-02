@@ -118,6 +118,7 @@ export default function App() {
           prefersReducedMotion={prefersReducedMotion}
           onInteractionStart={handleInteractionStart}
           onInteractionEnd={handleInteractionEnd}
+          manualRender={isMobile}
         />
         <Effects isMobile={isMobile} />
       </Canvas>

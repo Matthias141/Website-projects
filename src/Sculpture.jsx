@@ -184,6 +184,11 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
 
   const t = useRef(0);
 
+  // renderPriority=1 (vs. CameraRig's 2): @react-three/fiber sorts useFrame
+  // subscribers ascending by priority and runs them in that order, so this
+  // callback — which sets god.rotation/position for this frame — is
+  // guaranteed to run before CameraRig's auto-framing reads god's bounds,
+  // regardless of component mount order.
   useFrame((_, delta) => {
     t.current += delta * 0.55; // matches the vanilla build's ~0.009/frame @60fps pace
     const time = t.current;
@@ -278,7 +283,7 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     for (const im of bucketRefs.current) {
       if (im) im.instanceMatrix.needsUpdate = true;
     }
-  });
+  }, 1);
 
   return (
     <group ref={godRef}>
