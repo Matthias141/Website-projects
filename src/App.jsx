@@ -100,7 +100,9 @@ export default function App() {
           <primitive object={roomEnvironment} />
         </Environment>
 
-        <ambientLight intensity={0.5} />
+        {/* 2b of the color/exposure pass: 0.5 -> 0.3 as a first pass at
+            "white light too much" — needs on-device confirmation. */}
+        <ambientLight intensity={0.3} />
         <directionalLight
           position={[10, 14, 8]}
           intensity={0.9}
