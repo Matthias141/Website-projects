@@ -22,7 +22,7 @@ const groundY = -3.4;
 const worldPosTmp = new THREE.Vector3();
 const collisionPush = new THREE.Vector3();
 
-export default function Sculpture({ isMobile = false, prefersReducedMotion = false }) {
+export default function Sculpture({ isMobile = false, prefersReducedMotion = false, onFrame }) {
   const godRef = useRef();
   const debrisRefs = useRef([]); // populated via ref callbacks below
 
@@ -129,6 +129,8 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       god.rotation.y = 0.35;
       god.rotation.x = -0.18;
     }
+
+    onFrame?.(god.rotation.y, time);
 
     if (prefersReducedMotion) return;
 

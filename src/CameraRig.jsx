@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -19,7 +19,7 @@ const camDir = new THREE.Vector3();
  * fit distance on first measurement and only reacting if the sculpture's
  * bounds grow meaningfully past that baseline later.
  */
-export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true }) {
+export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd }) {
   const controlsRef = useRef();
   const { camera } = useThree();
   const framingCounter = useRef(0);
@@ -60,6 +60,8 @@ export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate 
       maxDistance={28}
       zoomSpeed={0.85}
       target={[0, 0.8, 0]}
+      onStart={onInteractionStart}
+      onEnd={onInteractionEnd}
     />
   );
 }
