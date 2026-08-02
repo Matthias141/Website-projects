@@ -8,6 +8,7 @@ import Ground from './Ground.jsx';
 import CameraRig from './CameraRig.jsx';
 import Effects from './Effects.jsx';
 import Hero from './Hero.jsx';
+import SceneText from './SceneText.jsx';
 import Loader from './ui/Loader.jsx';
 import UIOverlay from './ui/UIOverlay.jsx';
 import { useAmbientAudio } from './hooks/useAmbientAudio.js';
@@ -122,6 +123,12 @@ export default function App() {
           <Scroll html>
             <Hero prefersReducedMotion={prefersReducedMotion} heroFaded={heroFaded} />
           </Scroll>
+          {/* Deliberately NOT wrapped in <Scroll> (the non-html/canvas
+              variant) — that would apply ScrollControls' automatic
+              whole-scene parallax offset. This drives its own transform
+              from useScroll() instead, so it can be choreographed against
+              Hero's fade-out precisely rather than just scrolling past. */}
+          <SceneText prefersReducedMotion={prefersReducedMotion} />
         </ScrollControls>
 
         <CameraRig
