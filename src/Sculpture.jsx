@@ -39,6 +39,37 @@ const BUCKET_DIMS = [
 ];
 const BUCKET_COUNT = BUCKET_DIMS.length;
 
+// ===== HOVER AFFORDANCE (main body parts only, not debris/particles) =====
+// MeshStandardMaterial/MeshPhysicalMaterial's `emissive` defaults to black
+// (verified in three's source before writing this), so bumping only
+// emissiveIntensity — the naive version of this — would multiply zero by a
+// bigger number and produce no visible change. Setting `emissive` to the
+// material's own base color on hover, then back to black on pointer-out,
+// is what actually makes it glow.
+//
+// NOTE: several main-body parts intentionally SHARE a material (e.g. the
+// top cylinder and the shell both use M.red; core and shard both use
+// M.black) to keep material/shader count down. Mutating emissive on the
+// shared material means hovering one of those parts highlights all parts
+// sharing it — a real, visible consequence of reusing materials here, not
+// a bug in the hover handlers themselves.
+function onHoverStart(material) {
+  return (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = 'pointer';
+    material.emissive.set(material.color);
+    material.emissiveIntensity = 0.35;
+  };
+}
+function onHoverEnd(material) {
+  return (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = 'auto';
+    material.emissive.set(0x000000);
+    material.emissiveIntensity = 1;
+  };
+}
+
 // Same 6 debris colors as the vanilla build's `[M.green, M.blue, M.yellow,
 // M.cyan, M.magenta, M.red]` palette, as raw hex — instancing needs ONE
 // shared (white) material per bucket, with setColorAt() tinting each
@@ -287,20 +318,20 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
 
   return (
     <group ref={godRef}>
-      <mesh position={[0, 3.5, 0]} material={M.red} castShadow={!isMobile} receiveShadow={!isMobile}>
+      <mesh position={[0, 3.5, 0]} material={M.red} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.red)} onPointerOut={onHoverEnd(M.red)}>
         <cylinderGeometry args={[1.15, 1.15, 0.45, 32]} />
       </mesh>
-      <mesh position={[0, 2.95, 0]} material={M.green} castShadow={!isMobile} receiveShadow={!isMobile}>
+      <mesh position={[0, 2.95, 0]} material={M.green} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.green)} onPointerOut={onHoverEnd(M.green)}>
         <cylinderGeometry args={[1.05, 1.05, 0.5, 32]} />
       </mesh>
-      <mesh position={[0, 2.1, 0]} material={M.white} castShadow={!isMobile} receiveShadow={!isMobile}>
+      <mesh position={[0, 2.1, 0]} material={M.white} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.white)} onPointerOut={onHoverEnd(M.white)}>
         <cylinderGeometry args={[1.35, 1.35, 1.05, 32]} />
       </mesh>
-      <mesh position={[0, 1.35, 0]} material={M.black} geometry={G.torso} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[0.5, 0.65, -0.15]} rotation={[0, 0, -0.28]} material={M.blue} geometry={G.arm} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-1.75, -0.45, 0.25]} material={M.yellow} geometry={G.hipA} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-2.8, 0.2, 0.25]} material={M.yellow} geometry={G.hipB} castShadow={!isMobile} receiveShadow={!isMobile} />
-      <mesh position={[-1.85, -0.8, 0.2]} material={M.red} geometry={G.base} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[0, 1.35, 0]} material={M.black} geometry={G.torso} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.black)} onPointerOut={onHoverEnd(M.black)} />
+      <mesh position={[0.5, 0.65, -0.15]} rotation={[0, 0, -0.28]} material={M.blue} geometry={G.arm} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.blue)} onPointerOut={onHoverEnd(M.blue)} />
+      <mesh position={[-1.75, -0.45, 0.25]} material={M.yellow} geometry={G.hipA} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.yellow)} onPointerOut={onHoverEnd(M.yellow)} />
+      <mesh position={[-2.8, 0.2, 0.25]} material={M.yellow} geometry={G.hipB} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.yellow)} onPointerOut={onHoverEnd(M.yellow)} />
+      <mesh position={[-1.85, -0.8, 0.2]} material={M.red} geometry={G.base} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.red)} onPointerOut={onHoverEnd(M.red)} />
 
       <group position={[0.85, -1.05, 0.85]} rotation={[0.35, 0.65, -0.25]}>
         {soulColors.map((c, i) => (
@@ -308,11 +339,11 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
         ))}
       </group>
 
-      <mesh position={[0.85, 0.05, 0.95]} rotation={[1.05, 0.35, 0.15]} material={M.chrome} castShadow={!isMobile} receiveShadow={!isMobile}>
+      <mesh position={[0.85, 0.05, 0.95]} rotation={[1.05, 0.35, 0.15]} material={M.chrome} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.chrome)} onPointerOut={onHoverEnd(M.chrome)}>
         <torusGeometry args={[0.5, 0.11, 16, 32]} />
       </mesh>
 
-      <mesh position={[-0.55, 0.35, -1.2]} rotation={[0.18, 0.45, -0.35]} material={M.black} geometry={G.spine} castShadow={!isMobile} receiveShadow={!isMobile} />
+      <mesh position={[-0.55, 0.35, -1.2]} rotation={[0.18, 0.45, -0.35]} material={M.black} geometry={G.spine} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.black)} onPointerOut={onHoverEnd(M.black)} />
 
       {buckets.map((bucket, bIdx) => bucketCounts[bIdx] > 0 && (
         <instancedMesh
