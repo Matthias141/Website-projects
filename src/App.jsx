@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
+import { Environment, ScrollControls } from '@react-three/drei';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import Sculpture from './Sculpture.jsx';
 import Particles from './Particles.jsx';
@@ -112,6 +112,13 @@ export default function App() {
         </group>
         <Particles isMobile={isMobile} prefersReducedMotion={prefersReducedMotion} />
         <Ground />
+
+        {/* STAGE 0 pointer-conflict fix, see CameraRig.jsx's domElement note:
+            constrained to a left-anchored strip (not full-viewport) so its
+            scroll-capture div never overlaps the region users drag in to
+            orbit the sculpture. Empty for now — Stage 1/2 content goes
+            inside once the pointer coexistence is verified. */}
+        <ScrollControls pages={2} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }} />
 
         <CameraRig
           targetRef={sculptureGroupRef}

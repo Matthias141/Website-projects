@@ -21,7 +21,7 @@ const camDir = new THREE.Vector3();
  */
 export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd, manualRender = false }) {
   const controlsRef = useRef();
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const framingCounter = useRef(0);
   const minSafeDistance = useRef(0);
   const baselineSafeDistance = useRef(null);
@@ -71,6 +71,10 @@ export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate 
   return (
     <OrbitControls
       ref={controlsRef}
+      // Explicit domElement, pinned to the raw canvas — see the Stage 0
+      // pointer-conflict note in App.jsx for why this matters once
+      // <ScrollControls> is mounted anywhere in the tree.
+      domElement={gl.domElement}
       enableDamping
       dampingFactor={0.08}
       autoRotate={autoRotate && !prefersReducedMotion}
