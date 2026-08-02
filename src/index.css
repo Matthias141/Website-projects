@@ -116,27 +116,41 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   transition: all .3s;
 }
 
-.hero {
+/* ===== KINETIC HERO (src/Hero.jsx, mounted via <Scroll html>) ===== */
+.kinetic-hero {
   position: absolute;
   bottom: 80px;
   left: 28px;
   max-width: 480px;
   pointer-events: none;
-  transition: opacity .4s ease;
+  will-change: opacity, transform;
 }
-.hero.faded { opacity: 0; }
-.hero h1 {
+.kinetic-hero h1 {
   font-size: clamp(28px, 5vw, 42px);
   font-weight: 600;
   line-height: 1.15;
   margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
-.hero p {
+.kinetic-hero p {
   font-size: 15px;
   opacity: 0.7;
   line-height: 1.5;
   max-width: 360px;
+}
+/* Per-word reveal — respects the global prefers-reduced-motion media
+   query above (transition-duration collapses to ~0), and Hero.jsx also
+   skips straight to the revealed state in JS when prefersReducedMotion
+   is set, rather than relying on the CSS override alone. */
+.kinetic-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.kinetic-word.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ===== PANELS ===== */
@@ -272,8 +286,8 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
 @media (max-width: 768px) {
   .nav-desktop { display: none; }
   .menu-btn { display: flex; }
-  .hero { bottom: 70px; left: 20px; right: 20px; }
-  .hero h1 { font-size: 28px; }
+  .kinetic-hero { bottom: 70px; left: 20px; right: 20px; }
+  .kinetic-hero h1 { font-size: 28px; }
   .panel { width: 100%; }
   .topbar { padding: 0 20px; }
   .topbar-right { gap: 12px; }
@@ -321,8 +335,8 @@ body.dark { background: #0e0e0e; color: #f0f0f0; }
 body.dark .topbar { background: linear-gradient(to bottom, rgba(14,14,14,0.95), rgba(14,14,14,0)); }
 body.dark .nav-desktop a { color: #f0f0f0; }
 body.dark .menu-btn span { background: #f0f0f0; }
-body.dark .hero h1 { color: #f0f0f0; }
-body.dark .hero p { color: #f0f0f0; }
+body.dark .kinetic-hero h1 { color: #f0f0f0; }
+body.dark .kinetic-hero p { color: #f0f0f0; }
 body.dark .logo { color: #f0f0f0; }
 body.dark #drag-hint { color: #f0f0f0; }
 body.dark .panel { background: rgba(20,20,20,0.94); color: #f0f0f0; }

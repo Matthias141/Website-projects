@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, ScrollControls } from '@react-three/drei';
+import { Environment, ScrollControls, Scroll } from '@react-three/drei';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import Sculpture from './Sculpture.jsx';
 import Particles from './Particles.jsx';
 import Ground from './Ground.jsx';
 import CameraRig from './CameraRig.jsx';
 import Effects from './Effects.jsx';
+import Hero from './Hero.jsx';
 import Loader from './ui/Loader.jsx';
 import UIOverlay from './ui/UIOverlay.jsx';
 import { useAmbientAudio } from './hooks/useAmbientAudio.js';
@@ -116,9 +117,12 @@ export default function App() {
         {/* STAGE 0 pointer-conflict fix, see CameraRig.jsx's domElement note:
             constrained to a left-anchored strip (not full-viewport) so its
             scroll-capture div never overlaps the region users drag in to
-            orbit the sculpture. Empty for now — Stage 1/2 content goes
-            inside once the pointer coexistence is verified. */}
-        <ScrollControls pages={2} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }} />
+            orbit the sculpture. */}
+        <ScrollControls pages={2} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }}>
+          <Scroll html>
+            <Hero prefersReducedMotion={prefersReducedMotion} heroFaded={heroFaded} />
+          </Scroll>
+        </ScrollControls>
 
         <CameraRig
           targetRef={sculptureGroupRef}
@@ -135,7 +139,6 @@ export default function App() {
         onToggleDark={() => setDarkMode((v) => !v)}
         soundOn={soundOn}
         onToggleSound={toggleSound}
-        heroFaded={heroFaded}
       />
     </>
   );

@@ -133,7 +133,7 @@ function Panel({ id, title, children, isOpen, onClose }) {
   );
 }
 
-export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSound, heroFaded }) {
+export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSound }) {
   const [activePanel, setActivePanel] = useState(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [dragHintVisible, setDragHintVisible] = useState(false);
@@ -221,11 +221,6 @@ export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSou
 
         <div className={`mobile-nav${mobileNavOpen ? ' open' : ''}`}>
           {NAV_LINKS.map((l) => navLink(l.id, l.label))}
-        </div>
-
-        <div className={`hero${heroFaded ? ' faded' : ''}`}>
-          <h1>Creative Technologist<br />&amp; Systems Engineer</h1>
-          <p>Building interactive systems, generative experiences, and low-level tools from Umuahia, Nigeria.</p>
         </div>
 
         <Panel id="about" title="About" isOpen={activePanel === 'about'} onClose={closePanels}>
