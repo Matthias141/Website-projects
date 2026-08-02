@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import Sculpture from './Sculpture.jsx';
+import Particles from './Particles.jsx';
 import Ground from './Ground.jsx';
 import CameraRig from './CameraRig.jsx';
 import Effects from './Effects.jsx';
@@ -109,6 +110,7 @@ export default function App() {
             onFrame={setModulation}
           />
         </group>
+        <Particles isMobile={isMobile} prefersReducedMotion={prefersReducedMotion} />
         <Ground />
 
         <CameraRig
