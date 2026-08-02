@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment, ScrollControls, Scroll } from '@react-three/drei';
+import { NeutralToneMapping } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import Sculpture from './Sculpture.jsx';
 import Particles from './Particles.jsx';
@@ -73,7 +74,18 @@ export default function App() {
           near: 0.1,
           far: 100,
         }}
-        gl={{ antialias: !isMobile, powerPreference: 'high-performance' }}
+        gl={{
+          antialias: !isMobile,
+          powerPreference: 'high-performance',
+          // 2a of the color/exposure pass: R3F defaults to
+          // ACESFilmicToneMapping when unset (verified in
+          // @react-three/fiber's source) — swapped for NeutralToneMapping
+          // (three@0.185.1 has it — checked node_modules before using it),
+          // which is designed to preserve saturation better than ACES's
+          // filmic roll-off. Needs on-device confirmation, not visually
+          // verifiable in this sandbox.
+          toneMapping: NeutralToneMapping,
+        }}
       >
         <color attach="background" args={[bg]} />
         <fogExp2 attach="fog" args={[bg, 0.02]} />
