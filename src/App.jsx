@@ -118,8 +118,24 @@ export default function App() {
         {/* STAGE 0 pointer-conflict fix, see CameraRig.jsx's domElement note:
             constrained to a left-anchored strip (not full-viewport) so its
             scroll-capture div never overlaps the region users drag in to
-            orbit the sculpture. */}
-        <ScrollControls pages={2} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }}>
+            orbit the sculpture.
+
+            pages=2, distance=1 (distance's default, kept explicit here):
+            2 viewport-heights of scroll room — enough for the Hero
+            fade-out/SceneText fade-in handoff (both choreographed over
+            the FIRST page, scroll.range(0, 1/scroll.pages)) to read as a
+            deliberate reveal rather than feeling instant, without a
+            second empty page of scroll after the choreography finishes.
+
+            prefersReducedMotion doesn't disable scrolling itself — the
+            scroll mechanism stays intact — it disables what scroll DOES
+            to Hero/SceneText: both components short-circuit to their
+            final resting opacity/position regardless of scroll offset
+            when prefersReducedMotion is true (see the early-return at
+            the top of each one's useFrame), so a reduced-motion user
+            gets the finished state immediately, never the animated
+            reveal. */}
+        <ScrollControls pages={2} distance={1} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }}>
           <Scroll html>
             <Hero prefersReducedMotion={prefersReducedMotion} heroFaded={heroFaded} />
           </Scroll>
