@@ -74,6 +74,16 @@ export default function SceneText({ prefersReducedMotion = false }) {
         anchorX="center"
         anchorY="middle"
         castShadow={false}
+        // Legibility against the sculpture behind/around it — this is
+        // real SDF glyph geometry, not DOM, so a backdrop-filter scrim
+        // isn't applicable here. troika/drei's built-in halo mechanism
+        // (outlineWidth/Color/Blur) does the equivalent job: a soft dark
+        // halo around each glyph raises contrast regardless of what's
+        // moving behind it, without needing a background panel.
+        outlineWidth="6%"
+        outlineColor="#000000"
+        outlineOpacity={0.55}
+        outlineBlur="25%"
       >
         GODFORM
       </Text>

@@ -124,6 +124,27 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   max-width: 480px;
   pointer-events: none;
   will-change: opacity, transform;
+  /* Legibility scrim — the hero is deliberately layered over the
+     sculpture (not a full-screen backdrop), so this is a soft, blurred
+     panel sized to the text block itself, not the viewport. Padding +
+     matching negative margin enlarges the scrim beyond the text's own
+     box without shifting the bottom/left anchor point. */
+  padding: 20px 24px;
+  margin: -20px -24px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* iOS Safari needs the prefix */
+  background: linear-gradient(180deg, rgba(240,240,240,0.28), rgba(240,240,240,0.48));
+}
+body.dark .kinetic-hero {
+  background: linear-gradient(180deg, rgba(14,14,14,0.32), rgba(14,14,14,0.55));
+}
+/* Belt-and-suspenders for browsers without backdrop-filter support —
+   the scrim alone can't do its job without the blur, so lean harder on
+   opacity here instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .kinetic-hero { background: rgba(240,240,240,0.85); }
+  body.dark .kinetic-hero { background: rgba(14,14,14,0.85); }
 }
 .kinetic-hero h1 {
   font-size: clamp(28px, 5vw, 42px);
@@ -131,12 +152,21 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   line-height: 1.15;
   margin-bottom: 12px;
   letter-spacing: -0.5px;
+  /* Extra contrast on top of the scrim, doesn't need to carry the whole
+     job on its own — a light halo behind dark (light-mode) text. */
+  text-shadow: 0 1px 3px rgba(255,255,255,0.6), 0 2px 10px rgba(255,255,255,0.4);
 }
 .kinetic-hero p {
   font-size: 15px;
   opacity: 0.7;
   line-height: 1.5;
   max-width: 360px;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.6), 0 2px 10px rgba(255,255,255,0.4);
+}
+body.dark .kinetic-hero h1,
+body.dark .kinetic-hero p {
+  /* Inverted halo for dark mode — dark shadow behind light text. */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.4), 0 0 20px rgba(0,0,0,0.3);
 }
 /* Per-word reveal — respects the global prefers-reduced-motion media
    query above (transition-duration collapses to ~0), and Hero.jsx also
