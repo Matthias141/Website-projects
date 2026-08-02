@@ -136,7 +136,17 @@ export default function App() {
             gets the finished state immediately, never the animated
             reveal. */}
         <ScrollControls pages={2} distance={1} damping={0.2} style={{ width: 'min(600px, 60vw)', left: 0 }}>
-          <Scroll html>
+          {/* BUGFIX: <Scroll html>'s own wrapper div has no explicit
+              height, and its only child (.kinetic-hero) is `position:
+              absolute` — out of normal flow, so it doesn't establish the
+              wrapper's auto-height either. That collapsed the wrapper to
+              ~0px tall, which broke .kinetic-hero's `bottom: 80px`
+              positioning (no real containing-block height to anchor
+              against) and pushed it somewhere near the top of the
+              screen instead — reading as "the hero text is gone"
+              rather than literally being removed. Explicit width/height
+              here gives it a real containing block. */}
+          <Scroll html style={{ width: '100%', height: '100%' }}>
             <Hero prefersReducedMotion={prefersReducedMotion} heroFaded={heroFaded} />
           </Scroll>
           {/* Deliberately NOT wrapped in <Scroll> (the non-html/canvas
