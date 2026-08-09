@@ -10,8 +10,8 @@ const NAV_LINKS = [
 
 const WORK_ITEMS = [
   {
-    id: 'godform',
-    title: 'Godform',
+    id: 'sculpture',
+    title: 'Interactive Sculpture',
     meta: 'Interactive 3D Experience — 2026',
     open: true,
     body: (
@@ -227,7 +227,7 @@ export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSou
           <p>I'm Ifedayo Idowu — a DevOps/Cloud Engineer, creative technologist, and digital builder based in Aba, Abia State, Nigeria (relocating to Ibadan).</p>
           <p>On the infrastructure side, I build multi-environment CI/CD pipelines on AWS with Terraform and GitHub Actions, secured via OIDC federation — zero long-lived credentials in version control. Security tooling (Trivy, Semgrep, Gitleaks, OWASP ZAP) is a mandatory gate in every pipeline I ship, not an afterthought. Currently building Foundry, a production GitOps platform running real workloads, and pursuing AWS Certified Solutions Architect – Associate.</p>
           <p>During NYSC service, I also designed and delivered digital literacy training to 600+ civil servants across 4 Abia State government ministries — curriculum materials that were adopted into the ongoing programme.</p>
-          <p>On the creative side, I build things that live on-chain and on-screen — generative sculpture, procedural motion, and digital experiences with their own internal logic. Godform is one of them.</p>
+          <p>On the creative side, I build things that live on-chain and on-screen — generative sculpture, procedural motion, and digital experiences with their own internal logic. The sculpture on this page is one of them.</p>
           <p>Also exploring: systems programming in C++ and Rust, AI image generation, and tools built for builders on the African continent.</p>
         </Panel>
 

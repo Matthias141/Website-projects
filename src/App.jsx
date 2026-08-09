@@ -57,9 +57,9 @@ export default function App() {
     <>
       <a href="#panel-nav" className="skip-link">Skip to navigation</a>
       <p className="sr-only">
-        This page features an interactive 3D sculpture (Godform) in the
-        background. It is decorative — all content is available through the
-        navigation links.
+        This page features an interactive 3D sculpture in the background. It
+        is decorative — all content is available through the navigation
+        links.
       </p>
 
       <Loader />
