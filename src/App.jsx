@@ -126,7 +126,7 @@ export default function App() {
           />
         </group>
         <Particles isMobile={isMobile} prefersReducedMotion={prefersReducedMotion} />
-        <Ground />
+        <Ground isMobile={isMobile} />
 
         {/* STAGE 0 pointer-conflict fix, see CameraRig.jsx's domElement note:
             constrained to a left-anchored strip (not full-viewport) so its
