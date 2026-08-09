@@ -69,7 +69,7 @@ export default function Hero({ prefersReducedMotion = false, heroFaded = false }
   });
 
   return (
-    <div ref={rootRef} className="kinetic-hero">
+    <div ref={rootRef} className="kinetic-hero" data-testid="hero">
       <h1>
         <StaggeredWords text={HEADING_LINE1} revealed={revealed} delayStart={0} delayStep={60} />
         <br />

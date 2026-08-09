@@ -1,2 +1,10 @@
 node_modules/
 dist/
+
+# Playwright — report/test-results are regenerated per run; the
+# per-run *-actual/*-diff images are diagnostic-only, not the baselines
+# (those get committed so CI has something to diff against).
+report/
+test-results/
+tests/visual-check.spec.js-snapshots/**/*-actual.png
+tests/visual-check.spec.js-snapshots/**/*-diff.png

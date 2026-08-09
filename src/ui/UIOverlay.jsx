@@ -213,6 +213,7 @@ export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSou
               aria-label="Menu"
               aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen((v) => !v)}
+              data-testid="menu-toggle"
             >
               <span /><span /><span />
             </button>
