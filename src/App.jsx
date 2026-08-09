@@ -99,9 +99,12 @@ export default function App() {
           <primitive object={roomEnvironment} />
         </Environment>
 
-        {/* 2b of the color/exposure pass: 0.5 -> 0.3 as a first pass at
-            "white light too much" — needs on-device confirmation. */}
-        <ambientLight intensity={0.3} />
+        {/* Cut further (0.3 -> 0.18) per on-device feedback: this flat,
+            non-directional fill is what reads as "white light" washing
+            things out — the directional key light + materials' own
+            envMapIntensity/metalness (Sculpture.jsx) carry the bolder,
+            sharper, more reflective look instead. */}
+        <ambientLight intensity={0.18} />
         <directionalLight
           position={[10, 14, 8]}
           intensity={0.9}

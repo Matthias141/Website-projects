@@ -85,26 +85,33 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   // once, not on every re-render. envMapIntensity works automatically off
   // scene.environment (set in App.jsx via drei's <Environment>) — no need
   // to assign material.envMap by hand.
-  // 2c of the color/exposure pass ("white light too much"): envMapIntensity
-  // cut ~35% across the board (0.85 -> 0.55, white 1.0 -> 0.65), chrome cut
-  // less (1.6 -> 1.2) so it stays relatively higher than the colored
-  // materials — a strong reflection there is the actual intent. Needs
-  // on-device confirmation, not visually verifiable in this sandbox.
+  // PIVOT from 2c's "too washed out" fix: on-device feedback asked for
+  // bolder/sharper colors, less flat white light, and MORE reflection +
+  // metallic texture — which isn't "undo 2c," it's a different lever.
+  // The washed-out look was the flat, non-directional ambient fill (see
+  // ambientLight in App.jsx, cut further here) plus ACES's roll-off
+  // (already fixed by 2a's NeutralToneMapping). Reflection/metalness are
+  // DIRECTIONAL — driven by the env map and the key light, not the flat
+  // ambient — so raising them sharpens contrast instead of flattening it.
+  // envMapIntensity raised back up past 2c's cut (and past the original
+  // pre-2c values on most materials); metalness raised across colored
+  // materials; roughness trimmed slightly for crisper, less diffuse
+  // specular highlights ("sharper"). Needs on-device confirmation.
   const M = useMemo(() => {
     const mk = (color, opts, fresnel) => {
-      const material = new THREE.MeshPhysicalMaterial({ color, envMapIntensity: 0.55, ...opts });
+      const material = new THREE.MeshPhysicalMaterial({ color, envMapIntensity: 0.9, ...opts });
       return isMobile ? material : attachFresnelNoise(material, fresnel);
     };
     return {
-      red:     mk(0xe6392b, { roughness: 0.32, metalness: 0.25 }, { fresnelColor: 0xff8877 }),
-      green:   mk(0x2a9d4a, { roughness: 0.32, metalness: 0.25 }, { fresnelColor: 0x88ffaa }),
-      white:   mk(0xf8f8f8, { roughness: 0.22, metalness: 0.35, envMapIntensity: 0.65 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.25 }),
-      black:   mk(0x1a1a1a, { roughness: 0.38, metalness: 0.4 }, { fresnelColor: 0x6688ff, fresnelIntensity: 0.5 }),
-      blue:    mk(0x1e6fff, { roughness: 0.28, metalness: 0.3 }, { fresnelColor: 0x99ccff }),
-      yellow:  mk(0xffd60a, { roughness: 0.28, metalness: 0.2 }, { fresnelColor: 0xffee88 }),
-      magenta: mk(0xff2d9b, { roughness: 0.28, metalness: 0.3 }, { fresnelColor: 0xff99dd }),
-      cyan:    mk(0x00c8ff, { roughness: 0.28, metalness: 0.35 }, { fresnelColor: 0x99f0ff }),
-      chrome:  mk(0xffffff, { roughness: 0.05, metalness: 1.0, envMapIntensity: 1.2, clearcoat: 1.0, clearcoatRoughness: 0.05 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 }),
+      red:     mk(0xe6392b, { roughness: 0.24, metalness: 0.5 }, { fresnelColor: 0xff8877 }),
+      green:   mk(0x2a9d4a, { roughness: 0.24, metalness: 0.5 }, { fresnelColor: 0x88ffaa }),
+      white:   mk(0xf8f8f8, { roughness: 0.16, metalness: 0.55, envMapIntensity: 1.0 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.25 }),
+      black:   mk(0x1a1a1a, { roughness: 0.28, metalness: 0.6 }, { fresnelColor: 0x6688ff, fresnelIntensity: 0.5 }),
+      blue:    mk(0x1e6fff, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0x99ccff }),
+      yellow:  mk(0xffd60a, { roughness: 0.2, metalness: 0.45 }, { fresnelColor: 0xffee88 }),
+      magenta: mk(0xff2d9b, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0xff99dd }),
+      cyan:    mk(0x00c8ff, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0x99f0ff }),
+      chrome:  mk(0xffffff, { roughness: 0.05, metalness: 1.0, envMapIntensity: 1.6, clearcoat: 1.0, clearcoatRoughness: 0.05 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 }),
     };
   }, [isMobile]);
 
@@ -129,7 +136,7 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   // each instance to its palette color; instancing multiplies the
   // instance color into this material's (white) base color automatically.
   const debrisMaterial = useMemo(() => {
-    const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.28, envMapIntensity: 0.55 });
+    const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.22, metalness: 0.5, envMapIntensity: 0.9 });
     return isMobile ? material : attachFresnelNoise(material, { fresnelColor: 0xffffff, fresnelIntensity: 0.3 });
   }, [isMobile]);
 
@@ -189,7 +196,7 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   const soulColors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
   const soulMaterials = useMemo(
     () => soulColors.map((c) => {
-      const material = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.28, metalness: 0.35, envMapIntensity: 0.58 });
+      const material = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.2, metalness: 0.55, envMapIntensity: 0.9 });
       return isMobile ? material : attachFresnelNoise(material, { fresnelColor: c, fresnelIntensity: 0.3 });
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
