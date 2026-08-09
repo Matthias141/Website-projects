@@ -132,12 +132,15 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   padding: 20px 24px;
   margin: -20px -24px;
   border-radius: 16px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px); /* iOS Safari needs the prefix */
-  background: linear-gradient(180deg, rgba(240,240,240,0.28), rgba(240,240,240,0.48));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); /* iOS Safari needs the prefix */
+  /* Raised from 0.28/0.48 — an on-device screenshot showed this reading
+     as too subtle against busy sculpture geometry behind it, still well
+     short of opaque. */
+  background: linear-gradient(180deg, rgba(240,240,240,0.48), rgba(240,240,240,0.68));
 }
 body.dark .kinetic-hero {
-  background: linear-gradient(180deg, rgba(14,14,14,0.32), rgba(14,14,14,0.55));
+  background: linear-gradient(180deg, rgba(14,14,14,0.5), rgba(14,14,14,0.72));
 }
 /* Belt-and-suspenders for browsers without backdrop-filter support —
    the scrim alone can't do its job without the blur, so lean harder on
