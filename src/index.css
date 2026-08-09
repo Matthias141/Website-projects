@@ -8,6 +8,31 @@ body {
 }
 canvas { touch-action: none; display: block; }
 
+/* drei's <ScrollControls> creates its scroll-tracking div internally
+   (a plain document.createElement('div') with no className/id we can
+   target directly) and appends it as a sibling of the R3F Canvas's own
+   <canvas>, inside the Canvas wrapper. Reported: a thin bright vertical
+   line that behaves like a scroll indicator while actively scrolling —
+   this targets that div via sibling position to hide its native
+   scrollbar chrome, since there's no other selector available.
+   CAVEAT: iOS Safari specifically does not honor ::-webkit-scrollbar
+   for its native momentum-scroll indicator (a longstanding WebKit
+   limitation, not something CSS can override) — this helps on
+   desktop/Android browsers but may not remove it on iOS. If it's still
+   visible on-device after this, the indicator is confirmed to be the
+   cause, and the real fix is a bigger one: replacing ScrollControls'
+   native-overflow-scroll mechanism with a JS-driven (wheel/touch
+   listener) virtual scroll that never uses a real scrollable element. */
+canvas ~ div {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+canvas ~ div::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
