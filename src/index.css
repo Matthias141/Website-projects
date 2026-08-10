@@ -1,5 +1,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; }
+/* Dark mode here is a manual JS toggle (App.jsx sets body.dark), not just
+   prefers-color-scheme, so color-scheme is set to match that class rather
+   than the media query — otherwise native UI (scrollbars, etc.) would
+   follow the OS preference even when the user has manually overridden it. */
+html { color-scheme: light; }
+body.dark { color-scheme: dark; }
 body {
   overflow: hidden;
   background: #f0f0f0;
@@ -115,7 +121,12 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   gap: 24px;
 }
 .nav-desktop { display: flex; gap: 32px; }
-.nav-desktop a {
+.nav-desktop button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
   font-size: 13px;
   color: #111;
   text-decoration: none;
@@ -123,7 +134,7 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   opacity: 0.7;
   transition: opacity .2s;
 }
-.nav-desktop a:hover { opacity: 1; }
+.nav-desktop button:hover { opacity: 1; }
 
 .menu-btn {
   display: none;
@@ -138,7 +149,7 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   display: block;
   height: 2px;
   background: #111;
-  transition: all .3s;
+  transition: background-color .3s;
 }
 
 /* ===== KINETIC HERO (src/Hero.jsx, mounted via <Scroll html>) ===== */
@@ -339,7 +350,18 @@ body.dark .kinetic-hero p {
   transition: transform .35s cubic-bezier(0.16,1,0.3,1);
 }
 .mobile-nav.open { transform: translateY(0); }
-.mobile-nav a { font-size: 18px; text-decoration: none; color: #111; font-weight: 500; }
+.mobile-nav button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  font-size: 18px;
+  text-decoration: none;
+  color: #111;
+  font-weight: 500;
+}
 
 @media (max-width: 768px) {
   .nav-desktop { display: none; }
@@ -391,7 +413,7 @@ body.dark .kinetic-hero p {
 /* ===== DARK MODE ===== */
 body.dark { background: #0e0e0e; color: #f0f0f0; }
 body.dark .topbar { background: linear-gradient(to bottom, rgba(14,14,14,0.95), rgba(14,14,14,0)); }
-body.dark .nav-desktop a { color: #f0f0f0; }
+body.dark .nav-desktop button { color: #f0f0f0; }
 body.dark .menu-btn span { background: #f0f0f0; }
 body.dark .kinetic-hero h1 { color: #f0f0f0; }
 body.dark .kinetic-hero p { color: #f0f0f0; }
@@ -408,7 +430,7 @@ body.dark .skills-group h3 { color: #f0f0f0; }
 body.dark .skill { background: #1a1a1a; color: #f0f0f0; }
 body.dark .contact-links a { color: #f0f0f0; border-bottom-color: #222; }
 body.dark .mobile-nav { background: rgba(14,14,14,0.97); }
-body.dark .mobile-nav a { color: #f0f0f0; }
+body.dark .mobile-nav button { color: #f0f0f0; }
 body.dark #loader { background: #0e0e0e; }
 body.dark .loader-name { color: #f0f0f0; }
 body.dark .loader-bar-wrap { background: #333; }

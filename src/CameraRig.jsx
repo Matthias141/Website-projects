@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -19,7 +19,11 @@ const camDir = new THREE.Vector3();
  * fit distance on first measurement and only reacting if the sculpture's
  * bounds grow meaningfully past that baseline later.
  */
-export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd, manualRender = false }) {
+// Memoized for the same reason as Sculpture.jsx: App.jsx re-renders on
+// unrelated state (darkMode/heroFaded/soundOn); all props here are already
+// stable (ref object, primitives, useCallback'd handlers in App.jsx), so
+// memo lets this component skip re-running on those changes.
+const CameraRig = memo(function CameraRig({ targetRef, prefersReducedMotion, autoRotate = true, onInteractionStart, onInteractionEnd, manualRender = false }) {
   const controlsRef = useRef();
   const { camera, gl } = useThree();
   const framingCounter = useRef(0);
@@ -88,4 +92,6 @@ export default function CameraRig({ targetRef, prefersReducedMotion, autoRotate 
       onEnd={onInteractionEnd}
     />
   );
-}
+});
+
+export default CameraRig;

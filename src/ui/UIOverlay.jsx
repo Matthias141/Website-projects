@@ -123,8 +123,10 @@ function Panel({ id, title, children, isOpen, onClose }) {
       className={`panel${isOpen ? ' open' : ''}`}
       id={`panel-${id}`}
       role="dialog"
-      aria-modal="true"
+      aria-modal={isOpen}
       aria-labelledby={`panel-${id}-title`}
+      aria-hidden={!isOpen}
+      inert={!isOpen}
     >
       <button ref={closeBtnRef} className="close" onClick={onClose} aria-label="Close panel">×</button>
       <h2 id={`panel-${id}-title`}>{title}</h2>
@@ -166,15 +168,19 @@ export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSou
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [activePanel, mobileNavOpen]);
 
+  // <button>, not <a href="#">: opening a panel is an in-page action, not
+  // navigation to a new location, so it shouldn't be an anchor with a
+  // preventDefault()'d click.
   const navLink = (id, label) => (
-    <a
+    <button
       key={id}
-      href="#"
+      type="button"
+      className="nav-link"
       data-panel={id}
-      onClick={(e) => { e.preventDefault(); openPanel(id); }}
+      onClick={() => openPanel(id)}
     >
       {label}
-    </a>
+    </button>
   );
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -76,7 +76,14 @@ function onHoverEnd(material) {
 // instance, instead of 6 separate pre-colored materials.
 const DEBRIS_PALETTE = [0x2a9d4a, 0x1e6fff, 0xffd60a, 0x00c8ff, 0xff2d9b, 0xe6392b];
 
-export default function Sculpture({ isMobile = false, prefersReducedMotion = false, onFrame }) {
+// Memoized: App.jsx re-renders on darkMode/heroFaded/soundOn changes (the
+// latter fires on every pointer-drag start/end via handleInteractionStart/
+// End), and without memo every one of those unrelated state changes would
+// re-run this component's body — including allocating fresh onHoverStart/
+// onHoverEnd closures for all 9 body-part meshes — even though isMobile,
+// prefersReducedMotion, and onFrame (useAmbientAudio's setModulation,
+// itself useCallback-stable) rarely change.
+const Sculpture = memo(function Sculpture({ isMobile = false, prefersReducedMotion = false, onFrame }) {
   const godRef = useRef();
   const bucketRefs = useRef([]); // one InstancedMesh ref per size bucket
 
@@ -368,4 +375,6 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       ))}
     </group>
   );
-}
+});
+
+export default Sculpture;

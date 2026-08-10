@@ -1,4 +1,12 @@
+import { memo } from 'react';
 import { MeshReflectorMaterial } from '@react-three/drei';
+
+// NOT lazy-loaded, unlike Effects.jsx's postprocessing import: drei is
+// already statically imported elsewhere (App.jsx, CameraRig.jsx, Hero.jsx),
+// so a dynamic import() here can't be split into its own chunk — verified
+// via `npm run build`'s [INEFFECTIVE_DYNAMIC_IMPORT] warning. Splitting
+// this out for real would mean moving every drei import in the app to
+// per-module subpaths first; not attempted here.
 
 // TRADEOFF, called out explicitly per instructions (original Item 5): the
 // previous <shadowMaterial> rendered fully transparent except where a
@@ -26,7 +34,7 @@ import { MeshReflectorMaterial } from '@react-three/drei';
 // entirely), and desktop's mixStrength is cut from 40 to 8 — still a
 // visible reflection, much less likely to blow out a highlight into a
 // hard line.
-export default function Ground({ isMobile = false }) {
+const Ground = memo(function Ground({ isMobile = false }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.4, 0]} receiveShadow>
       <circleGeometry args={[14, 64]} />
@@ -45,4 +53,6 @@ export default function Ground({ isMobile = false }) {
       )}
     </mesh>
   );
-}
+});
+
+export default Ground;

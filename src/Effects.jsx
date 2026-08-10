@@ -1,4 +1,21 @@
-import { EffectComposer, Bloom, N8AO } from '@react-three/postprocessing';
+import { lazy, memo, Suspense } from 'react';
+
+// Lazy-loaded: this component returns null on mobile (see below) and never
+// renders the composer there, but a static import would still ship
+// @react-three/postprocessing's code to every mobile bundle. Deferring the
+// import until desktop actually needs it keeps that weight off mobile.
+const DesktopComposer = lazy(() =>
+  import('@react-three/postprocessing').then(({ EffectComposer, Bloom, N8AO }) => ({
+    default: function DesktopComposer() {
+      return (
+        <EffectComposer multisampling={0}>
+          <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
+          <Bloom intensity={0.28} luminanceThreshold={0.4} luminanceSmoothing={0.88} mipmapBlur />
+        </EffectComposer>
+      );
+    },
+  }))
+);
 
 /**
  * SSR (screen-space-reflections) was removed from this composer entirely —
@@ -25,16 +42,17 @@ import { EffectComposer, Bloom, N8AO } from '@react-three/postprocessing';
  * postprocessing/three APIs — see git history (Effects.jsx before this
  * commit) for the last working-build attempt.
  */
-export default function Effects({ isMobile }) {
+const Effects = memo(function Effects({ isMobile }) {
   if (isMobile) {
     // No composer at all on mobile — matches the vanilla build's choice to
     // skip postprocessing entirely there rather than run a crippled version.
     return null;
   }
   return (
-    <EffectComposer multisampling={0}>
-      <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
-      <Bloom intensity={0.28} luminanceThreshold={0.4} luminanceSmoothing={0.88} mipmapBlur />
-    </EffectComposer>
+    <Suspense fallback={null}>
+      <DesktopComposer />
+    </Suspense>
   );
-}
+});
+
+export default Effects;

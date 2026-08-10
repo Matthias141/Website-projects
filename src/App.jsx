@@ -51,6 +51,8 @@ export default function App() {
     heroFadeTimer.current = setTimeout(() => setHeroFaded(false), 2500);
   }, []);
 
+  const handleToggleDark = useCallback(() => setDarkMode((v) => !v), []);
+
   const bg = darkMode ? DARK_BG : LIGHT_BG;
 
   return (
@@ -177,7 +179,7 @@ export default function App() {
 
       <UIOverlay
         darkMode={darkMode}
-        onToggleDark={() => setDarkMode((v) => !v)}
+        onToggleDark={handleToggleDark}
         soundOn={soundOn}
         onToggleSound={toggleSound}
       />

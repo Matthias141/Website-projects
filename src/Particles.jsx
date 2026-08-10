@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js';
@@ -11,7 +11,10 @@ const noise = new ImprovedNoise();
 // Same 4-color palette as the vanilla build's ambient particle field.
 const PALETTE = [0xff2d9b, 0x00c8ff, 0xffcc00, 0xaa44ff];
 
-export default function Particles({ isMobile = false, prefersReducedMotion = false }) {
+// Memoized for the same reason as Sculpture.jsx: avoid re-running this
+// component (and its geometry/material lookups) on unrelated App-level
+// state changes like darkMode/heroFaded toggles.
+const Particles = memo(function Particles({ isMobile = false, prefersReducedMotion = false }) {
   const pointsRef = useRef();
   const t = useRef(0);
 
@@ -72,4 +75,6 @@ export default function Particles({ isMobile = false, prefersReducedMotion = fal
   });
 
   return <points ref={pointsRef} geometry={geometry} material={material} />;
-}
+});
+
+export default Particles;
