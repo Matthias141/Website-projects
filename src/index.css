@@ -1,10 +1,35 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { width: 100%; height: 100%; }
+
+/* ===== DESIGN TOKENS =====
+   Industrial/schematic direction: Space Grotesk carries headings and
+   body copy; IBM Plex Mono is the "systems" layer — labels, nav,
+   meta, buttons — the same split already seeded in the loader/drag-hint
+   before this pass, now applied consistently. One accent color only. */
+:root {
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --color-accent: #ff9f1c;
+  --radius-sharp: 2px;
+}
+
 body {
   overflow: hidden;
   background: #f0f0f0;
-  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-display);
   color: #111;
+  /* Faint blueprint grid — a texture, not a pattern; kept subtle enough
+     to read as "technical paper" rather than a graphic. */
+  background-image:
+    linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+body.dark {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 canvas { touch-action: none; display: block; }
 
@@ -59,20 +84,20 @@ canvas ~ div::-webkit-scrollbar {
   background: #111;
   color: #f0f0f0;
   padding: 10px 16px;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: var(--radius-sharp);
   text-decoration: none;
   transition: top .2s ease;
 }
 .skip-link:focus { top: 12px; }
 
 :focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 0;
 }
-body.dark :focus-visible { outline-color: #f0f0f0; }
 
 /* ===== UI OVERLAY ===== */
 #ui {
@@ -104,26 +129,58 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   background: linear-gradient(to bottom, rgba(240,240,240,0.92), rgba(240,240,240,0));
 }
 .logo {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1px;
   text-transform: uppercase;
+}
+/* Terminal-prompt marker — the "one thing" that signals this is an
+   engineer's site before a single word of copy is read. */
+.logo::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent);
 }
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 24px;
 }
-.nav-desktop { display: flex; gap: 32px; }
+.nav-desktop {
+  display: flex;
+  gap: 28px;
+  counter-reset: navidx;
+}
 .nav-desktop a {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   color: #111;
   text-decoration: none;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
-  transition: opacity .2s;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  counter-increment: navidx;
+  opacity: 0.6;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: opacity .2s, border-color .2s, color .2s;
 }
-.nav-desktop a:hover { opacity: 1; }
+.nav-desktop a::before {
+  content: counter(navidx, decimal-leading-zero);
+  color: var(--color-accent);
+  font-size: 10px;
+}
+.nav-desktop a:hover {
+  opacity: 1;
+  border-color: var(--color-accent);
+}
 
 .menu-btn {
   display: none;
@@ -140,6 +197,7 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
   background: #111;
   transition: all .3s;
 }
+.menu-btn[aria-expanded="true"] span { background: var(--color-accent); }
 
 /* ===== KINETIC HERO (src/Hero.jsx, mounted via <Scroll html>) ===== */
 .kinetic-hero {
@@ -154,9 +212,9 @@ body.dark :focus-visible { outline-color: #f0f0f0; }
      panel sized to the text block itself, not the viewport. Padding +
      matching negative margin enlarges the scrim beyond the text's own
      box without shifting the bottom/left anchor point. */
-  padding: 20px 24px;
-  margin: -20px -24px;
-  border-radius: 16px;
+  padding: 24px 28px;
+  margin: -24px -28px;
+  border-radius: 0;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px); /* iOS Safari needs the prefix */
   /* Raised from 0.28/0.48 — an on-device screenshot showed this reading
@@ -174,20 +232,42 @@ body.dark .kinetic-hero {
   .kinetic-hero { background: rgba(240,240,240,0.85); }
   body.dark .kinetic-hero { background: rgba(14,14,14,0.85); }
 }
+/* Targeting-frame corner brackets — schematic-annotation signature,
+   echoed on .panel below so the two surfaces read as one system. */
+.kinetic-hero::before,
+.kinetic-hero::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+.kinetic-hero::before {
+  top: 0; left: 0;
+  border-top: 2px solid var(--color-accent);
+  border-left: 2px solid var(--color-accent);
+}
+.kinetic-hero::after {
+  bottom: 0; right: 0;
+  border-bottom: 2px solid var(--color-accent);
+  border-right: 2px solid var(--color-accent);
+}
 .kinetic-hero h1 {
-  font-size: clamp(28px, 5vw, 42px);
-  font-weight: 600;
-  line-height: 1.15;
-  margin-bottom: 12px;
+  font-size: clamp(30px, 5.5vw, 50px);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 14px;
   letter-spacing: -0.5px;
   /* Extra contrast on top of the scrim, doesn't need to carry the whole
      job on its own — a light halo behind dark (light-mode) text. */
   text-shadow: 0 1px 3px rgba(255,255,255,0.6), 0 2px 10px rgba(255,255,255,0.4);
 }
 .kinetic-hero p {
-  font-size: 15px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   opacity: 0.7;
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: 0.1px;
   max-width: 360px;
   text-shadow: 0 1px 3px rgba(255,255,255,0.6), 0 2px 10px rgba(255,255,255,0.4);
 }
@@ -220,6 +300,8 @@ body.dark .kinetic-hero p {
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(0,0,0,0.08);
+  box-shadow: -1px 0 0 var(--color-accent);
   transform: translateX(100%);
   transition: transform .45s cubic-bezier(0.16,1,0.3,1);
   overflow-y: auto;
@@ -243,15 +325,17 @@ body.dark .kinetic-hero p {
   top: 28px; right: 28px;
   width: 36px; height: 36px;
   border: 1px solid #ddd;
-  border-radius: 50%;
+  border-radius: var(--radius-sharp);
   background: none;
+  font-family: var(--font-mono);
   font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background .2s, border-color .2s, color .2s;
 }
-.panel .close:hover { background: #f5f5f5; }
+.panel .close:hover { background: var(--color-accent); border-color: var(--color-accent); color: #111; }
 
 #panel-overlay {
   display: none;
@@ -275,41 +359,51 @@ body.dark .kinetic-hero p {
 }
 .work-item summary::-webkit-details-marker { display: none; }
 .work-item summary h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-.work-item summary span { font-size: 13px; opacity: 0.55; }
+.work-item summary span { font-family: var(--font-mono); font-size: 12px; opacity: 0.55; letter-spacing: 0.2px; }
 .work-item summary svg {
   flex-shrink: 0;
   width: 16px; height: 16px;
   opacity: 0.5;
-  transition: transform .3s ease;
+  transition: transform .3s ease, color .2s ease;
 }
-.work-item[open] summary svg { transform: rotate(180deg); }
+.work-item[open] summary svg { transform: rotate(180deg); color: var(--color-accent); opacity: 1; }
 .work-detail { padding: 0 0 20px; font-size: 14px; line-height: 1.65; opacity: 0.85; }
 .work-detail p { margin-bottom: 10px; }
 .work-detail p:last-child { margin-bottom: 0; }
 .work-detail strong { opacity: 1; font-weight: 600; }
+.work-detail a { color: var(--color-accent); }
 
 .skills-group { margin-bottom: 22px; }
 .skills-group:last-child { margin-bottom: 0; }
 .skills-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   opacity: 0.5;
   margin-bottom: 10px;
 }
+.skills-group h3::before { content: '//'; color: var(--color-accent); opacity: 1; }
 .skills-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
   margin-top: 8px;
 }
 .skill {
-  background: #f5f5f5;
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-size: 13px;
+  background: none;
+  border: 1px solid rgba(0,0,0,0.14);
+  border-left: 2px solid var(--color-accent);
+  padding: 10px 12px;
+  border-radius: var(--radius-sharp);
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 .contact-links { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
@@ -324,6 +418,7 @@ body.dark .kinetic-hero p {
   border-bottom: 1px solid #eee;
   transition: opacity .2s;
 }
+.contact-links a span { color: var(--color-accent); font-family: var(--font-mono); }
 .contact-links a:hover { opacity: 0.7; }
 
 .mobile-nav {
@@ -337,9 +432,25 @@ body.dark .kinetic-hero p {
   gap: 20px;
   transform: translateY(-120%);
   transition: transform .35s cubic-bezier(0.16,1,0.3,1);
+  counter-reset: mobilenavidx;
 }
 .mobile-nav.open { transform: translateY(0); }
-.mobile-nav a { font-size: 18px; text-decoration: none; color: #111; font-weight: 500; }
+.mobile-nav a {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 18px;
+  text-decoration: none;
+  color: #111;
+  font-weight: 500;
+  counter-increment: mobilenavidx;
+}
+.mobile-nav a::before {
+  content: counter(mobilenavidx, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-accent);
+}
 
 @media (max-width: 768px) {
   .nav-desktop { display: none; }
@@ -366,10 +477,10 @@ body.dark .kinetic-hero p {
   transition: opacity .6s ease, visibility .6s ease;
 }
 #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.loader-name { font-size: 13px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #111; }
+.loader-name { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: #111; }
 .loader-bar-wrap { width: 160px; height: 1px; background: #ddd; }
-.loader-bar { height: 1px; width: 0%; background: #111; transition: width .15s ease-out; }
-.loader-label { font-size: 10px; letter-spacing: 2px; font-family: monospace; color: #999; }
+.loader-bar { height: 1px; width: 0%; background: var(--color-accent); transition: width .15s ease-out; }
+.loader-label { font-size: 10px; letter-spacing: 2px; font-family: var(--font-mono); color: #999; }
 
 /* ===== DRAG HINT ===== */
 #drag-hint {
@@ -380,7 +491,7 @@ body.dark .kinetic-hero p {
   z-index: 10;
   font-size: 11px;
   letter-spacing: 2px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   color: #111;
   opacity: 0;
   pointer-events: none;
@@ -389,39 +500,39 @@ body.dark .kinetic-hero p {
 #drag-hint.visible { opacity: 0.45; }
 
 /* ===== DARK MODE ===== */
-body.dark { background: #0e0e0e; color: #f0f0f0; }
+body.dark { background-color: #0e0e0e; color: #f0f0f0; }
 body.dark .topbar { background: linear-gradient(to bottom, rgba(14,14,14,0.95), rgba(14,14,14,0)); }
+body.dark .logo,
 body.dark .nav-desktop a { color: #f0f0f0; }
 body.dark .menu-btn span { background: #f0f0f0; }
+body.dark .menu-btn[aria-expanded="true"] span { background: var(--color-accent); }
 body.dark .kinetic-hero h1 { color: #f0f0f0; }
 body.dark .kinetic-hero p { color: #f0f0f0; }
-body.dark .logo { color: #f0f0f0; }
 body.dark #drag-hint { color: #f0f0f0; }
-body.dark .panel { background: rgba(20,20,20,0.94); color: #f0f0f0; }
+body.dark .panel { background: rgba(20,20,20,0.94); color: #f0f0f0; border-left-color: rgba(255,255,255,0.08); }
 body.dark .panel p { color: #f0f0f0; }
 body.dark .panel h2 { color: #f0f0f0; }
 body.dark .panel .close { border-color: #333; color: #f0f0f0; }
-body.dark .panel .close:hover { background: #222; }
+body.dark .panel .close:hover { background: var(--color-accent); border-color: var(--color-accent); color: #111; }
 body.dark .work-item { border-bottom-color: #2a2a2a; }
 body.dark .work-item h3 { color: #f0f0f0; }
 body.dark .skills-group h3 { color: #f0f0f0; }
-body.dark .skill { background: #1a1a1a; color: #f0f0f0; }
+body.dark .skill { border-color: rgba(255,255,255,0.16); color: #f0f0f0; }
 body.dark .contact-links a { color: #f0f0f0; border-bottom-color: #222; }
 body.dark .mobile-nav { background: rgba(14,14,14,0.97); }
 body.dark .mobile-nav a { color: #f0f0f0; }
 body.dark #loader { background: #0e0e0e; }
 body.dark .loader-name { color: #f0f0f0; }
 body.dark .loader-bar-wrap { background: #333; }
-body.dark .loader-bar { background: #f0f0f0; }
 body.dark .cv-btn { border-color: #f0f0f0; color: #f0f0f0; }
-body.dark .cv-btn:hover { background: #f0f0f0; color: #111; }
+body.dark .cv-btn:hover { background: var(--color-accent); border-color: var(--color-accent); color: #111; }
 
 /* ===== TOOLBAR (dark mode + sound toggles) ===== */
 .toolbar { display: flex; gap: 8px; align-items: center; }
 .tool-btn {
   width: 32px; height: 32px;
   border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 50%;
+  border-radius: var(--radius-sharp);
   background: rgba(255,255,255,0.6);
   backdrop-filter: blur(8px);
   cursor: pointer;
@@ -430,14 +541,18 @@ body.dark .cv-btn:hover { background: #f0f0f0; color: #111; }
   justify-content: center;
   font-size: 14px;
   line-height: 1;
-  transition: background .2s, border-color .2s, transform .15s;
+  transition: background .2s, border-color .2s, transform .15s, box-shadow .2s;
 }
-.tool-btn:hover { background: rgba(255,255,255,0.9); }
+.tool-btn:hover {
+  background: rgba(255,255,255,0.9);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px rgba(255,159,28,0.15), 0 2px 12px rgba(255,159,28,0.2);
+}
 .tool-btn:active { transform: scale(0.92); }
 .tool-btn svg { width: 16px; height: 16px; display: block; color: #111; transition: color .2s; }
 body.dark .tool-btn svg { color: #f0f0f0; }
 body.dark .tool-btn { border-color: rgba(255,255,255,0.15); background: rgba(30,30,30,0.7); }
-body.dark .tool-btn:hover { background: rgba(50,50,50,0.9); }
+body.dark .tool-btn:hover { background: rgba(50,50,50,0.9); border-color: var(--color-accent); }
 
 /* ===== CV DOWNLOAD / PORTFOLIO BUTTON ===== */
 .cv-btn {
@@ -447,12 +562,19 @@ body.dark .tool-btn:hover { background: rgba(50,50,50,0.9); }
   margin-top: 24px;
   padding: 12px 20px;
   border: 1px solid #111;
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sharp);
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
   text-decoration: none;
   color: #111;
-  transition: background .2s, color .2s;
+  transition: background .2s, color .2s, border-color .2s, box-shadow .2s;
 }
-.cv-btn:hover { background: #111; color: #fff; }
+.cv-btn:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #111;
+  box-shadow: 0 0 0 1px rgba(255,159,28,0.2), 0 4px 20px rgba(255,159,28,0.25);
+}
