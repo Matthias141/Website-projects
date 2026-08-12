@@ -111,7 +111,7 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       yellow:  mk(0xffd60a, { roughness: 0.2, metalness: 0.45 }, { fresnelColor: 0xffee88 }),
       magenta: mk(0xff2d9b, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0xff99dd }),
       cyan:    mk(0x00c8ff, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0x99f0ff }),
-      chrome:  mk(0xffffff, { roughness: 0.05, metalness: 1.0, envMapIntensity: 1.2, clearcoat: 1.0, clearcoatRoughness: 0.05 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 }),
+      chrome:  mk(0xffffff, { roughness: 0.05, metalness: 1.0, envMapIntensity: isMobile ? 1.6 : 1.2, clearcoat: 1.0, clearcoatRoughness: 0.05 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 }),
     };
   }, [isMobile]);
 

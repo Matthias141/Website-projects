@@ -89,8 +89,12 @@ export default function App() {
           // three.js doesn't run through tone mapping — so this adds
           // contrast between the object and the page instead of just
           // darkening the whole canvas evenly the way another light/env
-          // cut would.
-          toneMappingExposure: 0.85,
+          // cut would. Desktop-only (see the brightness-pass comment
+          // below) — mobile keeps the default 1.0, its brightness was
+          // already validated separately via on-device phone screenshots
+          // earlier in this project and this round of cuts is specifically
+          // about how it reads on a laptop screen.
+          toneMappingExposure: isMobile ? 1 : 0.85,
         }}
       >
         <color attach="background" args={[bg]} />
@@ -103,20 +107,24 @@ export default function App() {
             must be constructed with `new` and handed over via <primitive>,
             not rendered as <RoomEnvironment />.
 
-            environmentIntensity cut to 0.5: RoomEnvironment is a bright
-            white studio by default, and with metalness 0.45-1.0 across
-            every material (Sculpture.jsx), its reflection was very likely
-            the actual dominant source of the "washed out in white light"
-            look on a laptop screen — more than the direct ambient/
-            directional lights, which is what earlier cuts targeted. This
-            scales the whole IBL contribution down in one place instead of
-            re-tuning envMapIntensity per material. */}
-        <Environment resolution={256} environmentIntensity={0.35}>
+            environmentIntensity cut on desktop only: RoomEnvironment is a
+            bright white studio by default, and with metalness 0.45-1.0
+            across every material (Sculpture.jsx), its reflection was very
+            likely the actual dominant source of the "washed out in white
+            light" look — but explicitly reported as a laptop/PC issue,
+            not a mobile one, so mobile keeps the original 1.0 (its
+            brightness was already validated via on-device phone
+            screenshots earlier in this project) and only the desktop path
+            gets cut. Scales the whole IBL contribution down in one place
+            instead of re-tuning envMapIntensity per material. */}
+        <Environment resolution={256} environmentIntensity={isMobile ? 1 : 0.35}>
           <primitive object={roomEnvironment} />
         </Environment>
 
-        {/* Ongoing brightness pass, each round per feedback that the scene
-            still reads too bright/washed-out on a laptop screen:
+        {/* Ongoing brightness pass — desktop/laptop only (isMobile keeps
+            the original, already on-device-validated values below), each
+            round per feedback that the scene still reads too bright/
+            washed-out on a laptop screen specifically:
               ambient:       0.3  -> 0.18 -> 0.12 -> 0.08
               key light:     0.9  -> 0.75 -> 0.55
               fill light:    0.3  -> 0.22 -> 0.15
@@ -125,10 +133,10 @@ export default function App() {
             first round of cuts alone wasn't enough — direct light,
             environment reflection, AND flat ambient fill all read as
             "white" independently, so all three need to come down. */}
-        <ambientLight intensity={0.08} />
+        <ambientLight intensity={isMobile ? 0.18 : 0.08} />
         <directionalLight
           position={[10, 14, 8]}
-          intensity={0.55}
+          intensity={isMobile ? 0.9 : 0.55}
           castShadow={!isMobile}
           shadow-mapSize={[1024, 1024]}
           shadow-camera-near={4}
@@ -140,7 +148,7 @@ export default function App() {
           shadow-bias={-0.0015}
           shadow-radius={3}
         />
-        <directionalLight position={[-8, 5, -6]} intensity={0.15} />
+        <directionalLight position={[-8, 5, -6]} intensity={isMobile ? 0.3 : 0.15} />
 
         <group ref={sculptureGroupRef}>
           <Sculpture
