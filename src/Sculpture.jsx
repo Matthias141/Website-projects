@@ -203,8 +203,17 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   const bodyGeometry = useMemo(() => buildOrganicBody({ isMobile }), [isMobile]);
   useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry]);
   const bodyMaterial = useMemo(() => {
+    // vertexColors carries the whole dye gradient (baked per-vertex in
+    // organicBody.js); base color stays white so vColor shows true.
+    // Compatibility with the fresnel onBeforeCompile injection VERIFIED
+    // against the actual injected code, not assumed: attachFresnelNoise
+    // only touches <common>, <begin_vertex>, and <dithering_fragment> —
+    // it never replaces <color_vertex>/<color_fragment>, which are the
+    // chunks where three multiplies vColor into diffuseColor before
+    // lighting, so the two features compose without interference.
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0xf0ece2,
+      color: 0xffffff,
+      vertexColors: true,
       roughness: 0.55,
       metalness: 0.08,
       envMapIntensity: 0.55,

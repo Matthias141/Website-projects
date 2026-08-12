@@ -72,6 +72,29 @@ const BREATH_KEYS = [
   [0.72, 0.02], [0.8, 0.08], [0.88, 0.03], [1.0, 0.0],
 ];
 
+// Color ramp along the body (bottom → top), matching the concept images:
+// warm yellow base → cobalt → charcoal → soft white shoulder → green
+// neck → coral-red cap. Keys are deliberately spaced with wide gaps and
+// intermediate blend tones so rampInterp's smoothstep produces dye-like
+// diffusion between zones, never flat banded stripes.
+const COLOR_KEYS = [
+  [0.0, 0xffbe1c], [0.1, 0xf2a02c], [0.2, 0x2f6ce0], [0.3, 0x1e56c8],
+  [0.42, 0x26262a], [0.52, 0x6f6e6a], [0.6, 0xe8e4da], [0.68, 0xa8c493],
+  [0.74, 0x2a9d4a], [0.82, 0x63a457], [0.9, 0xe05237], [1.0, 0xe6392b],
+];
+const COLOR_CHANNEL_KEYS = ['r', 'g', 'b'].map((ch) =>
+  COLOR_KEYS.map(([t, hex]) => [t, new THREE.Color(hex)[ch]])
+);
+
+function sampleColorRamp(t, out) {
+  out.setRGB(
+    rampInterp(COLOR_CHANNEL_KEYS[0], t),
+    rampInterp(COLOR_CHANNEL_KEYS[1], t),
+    rampInterp(COLOR_CHANNEL_KEYS[2], t)
+  );
+  return out;
+}
+
 // One loft: rings of `radialSegments` vertices at `heightSegments + 1`
 // stations along the curve, using the curve's parallel-transported
 // Frenet frames, closed with center-vertex cap fans at both ends.
@@ -260,5 +283,30 @@ export function buildOrganicBody({ isMobile = false } = {}) {
   // One smooth-shaded surface — welded rings + post-merge normals mean
   // no hard edges anywhere on the body itself.
   merged.computeVertexNormals();
+
+  // ===== VERTEX-COLOR DYE GRADIENT (Stage B) =====
+  // One material, per-vertex colors — never multiple materials, so the
+  // gradient flows continuously across the whole surface (tendrils
+  // included, via their root→tip aRamp blend). Two layers of noise keep
+  // the bands from looking mathematically clean: the ramp coordinate is
+  // jittered per-vertex (band edges wander like dye diffusion) and each
+  // channel gets a small independent brightness wobble (surface mottling).
+  const rampAttr = merged.getAttribute('aRamp');
+  const posAttr = merged.getAttribute('position');
+  const colors = new Float32Array(rampAttr.count * 3);
+  const c = new THREE.Color();
+  for (let i = 0; i < rampAttr.count; i++) {
+    const px = posAttr.getX(i);
+    const py = posAttr.getY(i);
+    const pz = posAttr.getZ(i);
+    const jitter = lumpNoise.noise(px * 0.9 + 11.3, py * 0.9, pz * 0.9) * 0.05;
+    const t = Math.min(1, Math.max(0, rampAttr.getX(i) + jitter));
+    sampleColorRamp(t, c);
+    const mottle = 1 + lumpNoise.noise(px * 2.1, py * 2.1 + 5.7, pz * 2.1) * 0.06;
+    colors[i * 3] = Math.min(1, c.r * mottle);
+    colors[i * 3 + 1] = Math.min(1, c.g * mottle);
+    colors[i * 3 + 2] = Math.min(1, c.b * mottle);
+  }
+  merged.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   return merged;
 }
