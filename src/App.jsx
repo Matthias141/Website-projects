@@ -94,8 +94,17 @@ export default function App() {
             does the PMREM baking for you when given a scene as children.
             RoomEnvironment is a THREE.Scene subclass, not a component — it
             must be constructed with `new` and handed over via <primitive>,
-            not rendered as <RoomEnvironment />. */}
-        <Environment resolution={256}>
+            not rendered as <RoomEnvironment />.
+
+            environmentIntensity cut to 0.5: RoomEnvironment is a bright
+            white studio by default, and with metalness 0.45-1.0 across
+            every material (Sculpture.jsx), its reflection was very likely
+            the actual dominant source of the "washed out in white light"
+            look on a laptop screen — more than the direct ambient/
+            directional lights, which is what earlier cuts targeted. This
+            scales the whole IBL contribution down in one place instead of
+            re-tuning envMapIntensity per material. */}
+        <Environment resolution={256} environmentIntensity={0.5}>
           <primitive object={roomEnvironment} />
         </Environment>
 
