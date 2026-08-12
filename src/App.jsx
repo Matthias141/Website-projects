@@ -14,6 +14,16 @@ import UIOverlay from './ui/UIOverlay.jsx';
 import { useAmbientAudio } from './hooks/useAmbientAudio.js';
 
 const LIGHT_BG = '#f0f0f0';
+// Desktop-only: the canvas <color>/fog background, not the UI chrome's
+// #f0f0f0 (topbar/panels/loader stay as-is — they're translucent blurred
+// overlays, not the thing being reported as "too white"). On a wide
+// laptop viewport the sculpture fills a small fraction of the frame, so
+// this flat background color dominates the visual field far more than on
+// a phone screen where the object fills much more of it — which is why
+// four rounds of cutting LIGHT intensity (which only affects the object's
+// shading, not this empty-space color at all) never visibly moved the
+// needle: the actual dominant "white" was always this, not the object.
+const LIGHT_BG_DESKTOP = '#c7c7c3';
 const DARK_BG = '#0e0e0e';
 
 export default function App() {
@@ -51,7 +61,7 @@ export default function App() {
     heroFadeTimer.current = setTimeout(() => setHeroFaded(false), 2500);
   }, []);
 
-  const bg = darkMode ? DARK_BG : LIGHT_BG;
+  const bg = darkMode ? DARK_BG : (isMobile ? LIGHT_BG : LIGHT_BG_DESKTOP);
 
   return (
     <>
