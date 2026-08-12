@@ -34,7 +34,16 @@ export default function Effects({ isMobile }) {
   return (
     <EffectComposer multisampling={0}>
       <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
-      <Bloom intensity={0.28} luminanceThreshold={0.4} luminanceSmoothing={0.88} mipmapBlur />
+      {/* Cut per feedback that the scene still reads too washed-out/bright
+          even after the background and light-intensity passes: at
+          luminanceThreshold=0.4, anything past a fairly dim midtone was
+          blooming, not just true highlights — spreading a soft white haze
+          across most of the object rather than a tight glow on the
+          brightest chrome/white parts. Threshold raised so only genuinely
+          bright surfaces trigger it, smoothing tightened to keep the
+          falloff from that higher threshold from re-spreading back out,
+          intensity cut so what does bloom is subtler. */}
+      <Bloom intensity={0.12} luminanceThreshold={0.75} luminanceSmoothing={0.6} mipmapBlur />
     </EffectComposer>
   );
 }
