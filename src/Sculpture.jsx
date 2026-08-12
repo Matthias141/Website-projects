@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js';
 import { attachFresnelNoise } from './shaders/fresnelNoise.js';
+import { buildOrganicBody } from './organicBody.js';
 
 // Same helper as the vanilla build: swaps sharp BoxGeometry for beveled
 // RoundedBoxGeometry, with bevel radius derived from each box's own
@@ -193,6 +194,26 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     }
   }, [debris]);
 
+  // ===== ORGANIC BODY (Stage A of the organism rebuild) =====
+  // One continuous lofted surface (see organicBody.js) replacing the
+  // stacked-primitives trunk in the render. Neutral bone-ceramic material
+  // for this stage — the vertex-color dye gradient is Stage B, breathing
+  // is Stage C. Same isMobile split as every other material here: the
+  // fresnel/noise shader attach is desktop-only.
+  const bodyGeometry = useMemo(() => buildOrganicBody({ isMobile }), [isMobile]);
+  useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry]);
+  const bodyMaterial = useMemo(() => {
+    const material = new THREE.MeshPhysicalMaterial({
+      color: 0xf0ece2,
+      roughness: 0.55,
+      metalness: 0.08,
+      envMapIntensity: 0.55,
+      clearcoat: 0.2,
+      clearcoatRoughness: 0.6,
+    });
+    return isMobile ? material : attachFresnelNoise(material, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.015 });
+  }, [isMobile]);
+
   const soulColors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
   const soulMaterials = useMemo(
     () => soulColors.map((c) => {
@@ -204,8 +225,8 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   );
 
   const shaderMaterials = useMemo(
-    () => [...Object.values(M), ...soulMaterials, debrisMaterial].filter((m) => m.userData),
-    [M, soulMaterials, debrisMaterial]
+    () => [...Object.values(M), ...soulMaterials, debrisMaterial, bodyMaterial].filter((m) => m.userData),
+    [M, soulMaterials, debrisMaterial, bodyMaterial]
   );
 
   // ===== STATIC BODY GEOMETRIES =====
@@ -330,32 +351,23 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
 
   return (
     <group ref={godRef}>
-      <mesh position={[0, 3.5, 0]} material={M.red} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.red)} onPointerOut={onHoverEnd(M.red)}>
-        <cylinderGeometry args={[1.15, 1.15, 0.45, 32]} />
-      </mesh>
-      <mesh position={[0, 2.95, 0]} material={M.green} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.green)} onPointerOut={onHoverEnd(M.green)}>
-        <cylinderGeometry args={[1.05, 1.05, 0.5, 32]} />
-      </mesh>
-      <mesh position={[0, 2.1, 0]} material={M.white} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.white)} onPointerOut={onHoverEnd(M.white)}>
-        <cylinderGeometry args={[1.35, 1.35, 1.05, 32]} />
-      </mesh>
-      <mesh position={[0, 1.35, 0]} material={M.black} geometry={G.torso} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.black)} onPointerOut={onHoverEnd(M.black)} />
-      <mesh position={[0.5, 0.65, -0.15]} rotation={[0, 0, -0.28]} material={M.blue} geometry={G.arm} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.blue)} onPointerOut={onHoverEnd(M.blue)} />
-      <mesh position={[-1.75, -0.45, 0.25]} material={M.yellow} geometry={G.hipA} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.yellow)} onPointerOut={onHoverEnd(M.yellow)} />
-      <mesh position={[-2.8, 0.2, 0.25]} material={M.yellow} geometry={G.hipB} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.yellow)} onPointerOut={onHoverEnd(M.yellow)} />
-      <mesh position={[-1.85, -0.8, 0.2]} material={M.red} geometry={G.base} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.red)} onPointerOut={onHoverEnd(M.red)} />
+      {/* The whole organism is one mesh now — hover glows the entire body
+          (the shared-material caveat in the hover comment above is moot
+          for the body itself: one surface, one material, by design). */}
+      <mesh
+        geometry={bodyGeometry}
+        material={bodyMaterial}
+        castShadow={!isMobile}
+        receiveShadow={!isMobile}
+        onPointerOver={onHoverStart(bodyMaterial)}
+        onPointerOut={onHoverEnd(bodyMaterial)}
+      />
 
-      <group position={[0.85, -1.05, 0.85]} rotation={[0.35, 0.65, -0.25]}>
-        {soulColors.map((c, i) => (
-          <mesh key={i} position={[(i - 2.5) * 0.18, 0, 0]} geometry={G.soul} material={soulMaterials[i]} castShadow={!isMobile} receiveShadow={!isMobile} />
-        ))}
-      </group>
-
+      {/* Chrome torus — still at its old floating position for this stage;
+          Stage D repositions it as the rigid collar around the neck. */}
       <mesh position={[0.85, 0.05, 0.95]} rotation={[1.05, 0.35, 0.15]} material={M.chrome} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.chrome)} onPointerOut={onHoverEnd(M.chrome)}>
         <torusGeometry args={[0.5, 0.11, 16, 32]} />
       </mesh>
-
-      <mesh position={[-0.55, 0.35, -1.2]} rotation={[0.18, 0.45, -0.35]} material={M.black} geometry={G.spine} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.black)} onPointerOut={onHoverEnd(M.black)} />
 
       {buckets.map((bucket, bIdx) => bucketCounts[bIdx] > 0 && (
         <instancedMesh
