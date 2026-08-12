@@ -40,7 +40,7 @@ const BUCKET_DIMS = [
 ];
 const BUCKET_COUNT = BUCKET_DIMS.length;
 
-// ===== HOVER AFFORDANCE (main body parts only, not debris/particles) =====
+// ===== HOVER AFFORDANCE (body + collar only, not debris/particles) =====
 // MeshStandardMaterial/MeshPhysicalMaterial's `emissive` defaults to black
 // (verified in three's source before writing this), so bumping only
 // emissiveIntensity — the naive version of this — would multiply zero by a
@@ -48,12 +48,11 @@ const BUCKET_COUNT = BUCKET_DIMS.length;
 // material's own base color on hover, then back to black on pointer-out,
 // is what actually makes it glow.
 //
-// NOTE: several main-body parts intentionally SHARE a material (e.g. the
-// top cylinder and the shell both use M.red; core and shard both use
-// M.black) to keep material/shader count down. Mutating emissive on the
-// shared material means hovering one of those parts highlights all parts
-// sharing it — a real, visible consequence of reusing materials here, not
-// a bug in the hover handlers themselves.
+// Since the organism rebuild there are exactly two hoverable surfaces —
+// the one-mesh body and the chrome collar — each with its own material,
+// so hovering one can never light up the other. (The body's material is
+// white + vertexColors, so its hover glow is a soft white brightening
+// across the whole organism — one creature, one response, by design.)
 function onHoverStart(material) {
   return (e) => {
     e.stopPropagation();
@@ -81,39 +80,25 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   const godRef = useRef();
   const bucketRefs = useRef([]); // one InstancedMesh ref per size bucket
 
-  // ===== MATERIALS =====
-  // useMemo so materials (and their compiled shaders) are created exactly
-  // once, not on every re-render. envMapIntensity works automatically off
-  // scene.environment (set in App.jsx via drei's <Environment>) — no need
-  // to assign material.envMap by hand.
-  // PIVOT from 2c's "too washed out" fix: on-device feedback asked for
-  // bolder/sharper colors, less flat white light, and MORE reflection +
-  // metallic texture — which isn't "undo 2c," it's a different lever.
-  // The washed-out look was the flat, non-directional ambient fill (see
-  // ambientLight in App.jsx, cut further here) plus ACES's roll-off
-  // (already fixed by 2a's NeutralToneMapping). Reflection/metalness are
-  // DIRECTIONAL — driven by the env map and the key light, not the flat
-  // ambient — so raising them sharpens contrast instead of flattening it.
-  // envMapIntensity raised back up past 2c's cut (and past the original
-  // pre-2c values on most materials); metalness raised across colored
-  // materials; roughness trimmed slightly for crisper, less diffuse
-  // specular highlights ("sharper"). Needs on-device confirmation.
-  const M = useMemo(() => {
-    const mk = (color, opts, fresnel) => {
-      const material = new THREE.MeshPhysicalMaterial({ color, envMapIntensity: 0.9, ...opts });
-      return isMobile ? material : attachFresnelNoise(material, fresnel);
-    };
-    return {
-      red:     mk(0xe6392b, { roughness: 0.24, metalness: 0.5 }, { fresnelColor: 0xff8877 }),
-      green:   mk(0x2a9d4a, { roughness: 0.24, metalness: 0.5 }, { fresnelColor: 0x88ffaa }),
-      white:   mk(0xf8f8f8, { roughness: 0.16, metalness: 0.55, envMapIntensity: 1.0 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.25 }),
-      black:   mk(0x1a1a1a, { roughness: 0.28, metalness: 0.6 }, { fresnelColor: 0x6688ff, fresnelIntensity: 0.5 }),
-      blue:    mk(0x1e6fff, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0x99ccff }),
-      yellow:  mk(0xffd60a, { roughness: 0.2, metalness: 0.45 }, { fresnelColor: 0xffee88 }),
-      magenta: mk(0xff2d9b, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0xff99dd }),
-      cyan:    mk(0x00c8ff, { roughness: 0.2, metalness: 0.55 }, { fresnelColor: 0x99f0ff }),
-      chrome:  mk(0xffffff, { roughness: 0.05, metalness: 1.0, envMapIntensity: isMobile ? 1.6 : 1.2, clearcoat: 1.0, clearcoatRoughness: 0.05 }, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 }),
-    };
+  // ===== CHROME COLLAR MATERIAL =====
+  // The one survivor of the old stacked-primitives material palette (the
+  // colored trunk materials died with the trunk in the organism rebuild —
+  // the body's color now lives in its vertex-color gradient instead).
+  // useMemo so the material (and its compiled shader) is created exactly
+  // once; envMapIntensity works automatically off scene.environment (set
+  // in App.jsx via drei's <Environment>) — no need to assign
+  // material.envMap by hand. Kept mirror-polished: the collar is the
+  // deliberate rigid/artificial counterpoint to the soft breathing body.
+  const chromeMaterial = useMemo(() => {
+    const material = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      roughness: 0.05,
+      metalness: 1.0,
+      envMapIntensity: isMobile ? 1.6 : 1.2,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+    });
+    return isMobile ? material : attachFresnelNoise(material, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.012 });
   }, [isMobile]);
 
   // ===== DEBRIS SIZE BUCKETS =====
@@ -194,12 +179,14 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     }
   }, [debris]);
 
-  // ===== ORGANIC BODY (Stage A of the organism rebuild) =====
-  // One continuous lofted surface (see organicBody.js) replacing the
-  // stacked-primitives trunk in the render. Neutral bone-ceramic material
-  // for this stage — the vertex-color dye gradient is Stage B, breathing
-  // is Stage C. Same isMobile split as every other material here: the
-  // fresnel/noise shader attach is desktop-only.
+  // ===== ORGANIC BODY =====
+  // One continuous lofted surface (see organicBody.js) — the whole
+  // organism is a single welded geometry carrying its dye gradient in
+  // vertex colors and its breathing weights in baked attributes. Same
+  // isMobile split as every other material here: the fresnel/noise/
+  // breath shader attach is desktop-only, so the mobile body is the
+  // matte gradient form at rest (consistent with mobile skipping every
+  // other shader-level effect in this app).
   const bodyGeometry = useMemo(() => buildOrganicBody({ isMobile }), [isMobile]);
   useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry]);
   const bodyMaterial = useMemo(() => {
@@ -246,37 +233,10 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     });
   }, [isMobile]);
 
-  const soulColors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
-  const soulMaterials = useMemo(
-    () => soulColors.map((c) => {
-      const material = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.2, metalness: 0.55, envMapIntensity: 0.9 });
-      return isMobile ? material : attachFresnelNoise(material, { fresnelColor: c, fresnelIntensity: 0.3 });
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isMobile]
-  );
-
   const shaderMaterials = useMemo(
-    () => [...Object.values(M), ...soulMaterials, debrisMaterial, bodyMaterial].filter((m) => m.userData),
-    [M, soulMaterials, debrisMaterial, bodyMaterial]
+    () => [chromeMaterial, debrisMaterial, bodyMaterial].filter((m) => m.userData),
+    [chromeMaterial, debrisMaterial, bodyMaterial]
   );
-
-  // ===== STATIC BODY GEOMETRIES =====
-  // Built once via rbox() and disposed on unmount, instead of calling rbox()
-  // inline in JSX (which would allocate + upload new GPU buffers every render).
-  const G = useMemo(() => ({
-    torso: rbox(2.4, 0.55, 1.55),
-    arm: rbox(1.5, 0.85, 1.05),
-    hipA: rbox(2.7, 0.65, 2.1),
-    hipB: rbox(0.65, 1.5, 2.1),
-    base: rbox(3.2, 0.95, 2.5),
-    soul: rbox(0.17, 1.4, 0.65, 2),
-    spine: rbox(0.22, 1.7, 0.45, 2),
-  }), []);
-
-  useEffect(() => () => {
-    Object.values(G).forEach((g) => g.dispose());
-  }, [G]);
 
   const t = useRef(0);
 
@@ -403,10 +363,16 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
         onPointerOut={onHoverEnd(bodyMaterial)}
       />
 
-      {/* Chrome torus — still at its old floating position for this stage;
-          Stage D repositions it as the rigid collar around the neck. */}
-      <mesh position={[0.85, 0.05, 0.95]} rotation={[1.05, 0.35, 0.15]} material={M.chrome} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(M.chrome)} onPointerOut={onHoverEnd(M.chrome)}>
-        <torusGeometry args={[0.5, 0.11, 16, 32]} />
+      {/* Chrome collar — the rigid counterpoint to the breathing body,
+          ringing the neck per the concept images. y=3.05 is the neck's
+          measured minimum (max body radius there 0.444 incl. lump noise);
+          major 0.62 − tube 0.13 leaves a 0.49 inner opening, so the neck
+          clears it even at peak inhale (see the budget note above). The
+          slight X/Z tilt keeps it looking slipped-on rather than
+          machined-in-place. It does NOT breathe: no breath attach on
+          chromeMaterial, and it rides the god group like everything else. */}
+      <mesh position={[0, 3.05, 0]} rotation={[Math.PI / 2 + 0.1, 0, 0.06]} material={chromeMaterial} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(chromeMaterial)} onPointerOut={onHoverEnd(chromeMaterial)}>
+        <torusGeometry args={[0.62, 0.13, 20, 48]} />
       </mesh>
 
       {buckets.map((bucket, bIdx) => bucketCounts[bIdx] > 0 && (
