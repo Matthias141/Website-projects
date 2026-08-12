@@ -84,6 +84,13 @@ export default function App() {
           // filmic roll-off. Needs on-device confirmation, not visually
           // verifiable in this sandbox.
           toneMapping: NeutralToneMapping,
+          // Uniformly dims the LIT scene (lights + env reflections) without
+          // touching the flat <color attach="background"> below, which
+          // three.js doesn't run through tone mapping — so this adds
+          // contrast between the object and the page instead of just
+          // darkening the whole canvas evenly the way another light/env
+          // cut would.
+          toneMappingExposure: 0.85,
         }}
       >
         <color attach="background" args={[bg]} />
@@ -104,23 +111,24 @@ export default function App() {
             directional lights, which is what earlier cuts targeted. This
             scales the whole IBL contribution down in one place instead of
             re-tuning envMapIntensity per material. */}
-        <Environment resolution={256} environmentIntensity={0.5}>
+        <Environment resolution={256} environmentIntensity={0.35}>
           <primitive object={roomEnvironment} />
         </Environment>
 
-        {/* Cut further (0.3 -> 0.18 -> 0.12) per feedback that the scene
-            still reads too bright/washed-out on a laptop screen: this flat,
-            non-directional fill is what reads as "white light" washing
-            things out — the directional key light + materials' own
-            envMapIntensity/metalness (Sculpture.jsx) carry the bolder,
-            sharper, more reflective look instead. Key and fill directional
-            lights cut proportionally (0.9 -> 0.75, 0.3 -> 0.22) so the
-            overall exposure drops without flattening the shading contrast
-            that was the whole point of leaning on ambient less. */}
-        <ambientLight intensity={0.12} />
+        {/* Ongoing brightness pass, each round per feedback that the scene
+            still reads too bright/washed-out on a laptop screen:
+              ambient:       0.3  -> 0.18 -> 0.12 -> 0.08
+              key light:     0.9  -> 0.75 -> 0.55
+              fill light:    0.3  -> 0.22 -> 0.15
+              env intensity: 1.0  -> 0.5  -> 0.35
+            Cutting all four levers together (not just ambient) since the
+            first round of cuts alone wasn't enough — direct light,
+            environment reflection, AND flat ambient fill all read as
+            "white" independently, so all three need to come down. */}
+        <ambientLight intensity={0.08} />
         <directionalLight
           position={[10, 14, 8]}
-          intensity={0.75}
+          intensity={0.55}
           castShadow={!isMobile}
           shadow-mapSize={[1024, 1024]}
           shadow-camera-near={4}
@@ -132,7 +140,7 @@ export default function App() {
           shadow-bias={-0.0015}
           shadow-radius={3}
         />
-        <directionalLight position={[-8, 5, -6]} intensity={0.22} />
+        <directionalLight position={[-8, 5, -6]} intensity={0.15} />
 
         <group ref={sculptureGroupRef}>
           <Sculpture
