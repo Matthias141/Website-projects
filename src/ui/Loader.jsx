@@ -37,7 +37,7 @@ export default function Loader({ onDone }) {
 
   return (
     <div id="loader" className={hidden ? 'hidden' : ''}>
-      <div className="loader-name">Ifedayo Idowu</div>
+      <div className="loader-name">Ifedayo's Projects</div>
       <div className="loader-bar-wrap">
         <div className="loader-bar" style={{ width: `${progress}%` }} />
       </div>

@@ -99,15 +99,19 @@ export default function App() {
           <primitive object={roomEnvironment} />
         </Environment>
 
-        {/* Cut further (0.3 -> 0.18) per on-device feedback: this flat,
+        {/* Cut further (0.3 -> 0.18 -> 0.12) per feedback that the scene
+            still reads too bright/washed-out on a laptop screen: this flat,
             non-directional fill is what reads as "white light" washing
             things out — the directional key light + materials' own
             envMapIntensity/metalness (Sculpture.jsx) carry the bolder,
-            sharper, more reflective look instead. */}
-        <ambientLight intensity={0.18} />
+            sharper, more reflective look instead. Key and fill directional
+            lights cut proportionally (0.9 -> 0.75, 0.3 -> 0.22) so the
+            overall exposure drops without flattening the shading contrast
+            that was the whole point of leaning on ambient less. */}
+        <ambientLight intensity={0.12} />
         <directionalLight
           position={[10, 14, 8]}
-          intensity={0.9}
+          intensity={0.75}
           castShadow={!isMobile}
           shadow-mapSize={[1024, 1024]}
           shadow-camera-near={4}
@@ -119,7 +123,7 @@ export default function App() {
           shadow-bias={-0.0015}
           shadow-radius={3}
         />
-        <directionalLight position={[-8, 5, -6]} intensity={0.3} />
+        <directionalLight position={[-8, 5, -6]} intensity={0.22} />
 
         <group ref={sculptureGroupRef}>
           <Sculpture

@@ -185,7 +185,7 @@ export default function UIOverlay({ darkMode, onToggleDark, soundOn, onToggleSou
 
       <div id="ui">
         <div className="topbar">
-          <div className="logo">Ifedayo Idowu</div>
+          <div className="logo">Ifedayo's Projects</div>
           <div className="topbar-right">
             <nav className="nav-desktop" id="panel-nav">
               {NAV_LINKS.map((l) => navLink(l.id, l.label))}
