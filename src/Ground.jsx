@@ -26,7 +26,14 @@ import { MeshReflectorMaterial } from '@react-three/drei';
 // entirely), and desktop's mixStrength is cut from 40 to 8 — still a
 // visible reflection, much less likely to blow out a highlight into a
 // hard line.
-export default function Ground({ isMobile = false }) {
+// `color` is MeshReflectorMaterial's diffuse base (its own prop, defaults
+// to white if unset — NOT inherited from scene.background). Left at the
+// default it was invisible against the old near-white canvas background,
+// but reads as a hard white disk now that the desktop canvas background
+// is a visibly darker gray (see LIGHT_BG_DESKTOP in App.jsx) — matching
+// it here to whatever the scene's actual background color is keeps the
+// ground blending into the floor instead of standing out as a shape.
+export default function Ground({ isMobile = false, color = '#f0f0f0' }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.4, 0]} receiveShadow>
       <circleGeometry args={[14, 64]} />
@@ -34,6 +41,7 @@ export default function Ground({ isMobile = false }) {
         <shadowMaterial opacity={0.28} />
       ) : (
         <MeshReflectorMaterial
+          color={color}
           blur={[300, 100]}
           resolution={512}
           mixBlur={1}
