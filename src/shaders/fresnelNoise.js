@@ -59,31 +59,77 @@ float snoise(vec3 v){
  * stock MeshPhysicalMaterial via onBeforeCompile. Call once per material
  * (e.g. inside a useMemo), then push shader.uniforms.uTime.value = clock
  * every frame from useFrame — see useShaderClock.js.
+ *
+ * `breath: true` (used by the organic body only) layers two more
+ * displacement terms on top of the noise ripple, reading the geometry's
+ * baked aRamp/aBreath attributes (see organicBody.js):
+ *   LAYER 1 — breath: slow swell along normals, ~5s real-time cycle
+ *     (uTime runs at 0.55× real seconds, so ω=2.28 → 2π/2.28 ≈ 2.75 uTime
+ *     units ≈ 5.0s). Phase is offset by -aRamp so the crest TRAVELS UP
+ *     the body — belly leads, shoulders follow — instead of the whole
+ *     surface swelling in lockstep. Amplitude is aBreath-weighted:
+ *     belly-max, near-zero at cap rim, base contact, and the collar neck.
+ *   LAYER 2 — heartbeat: small fast double-thump (two gaussian bumps,
+ *     lub then softer dub, ~1.2s real period), masked to the belly band
+ *     of aRamp only.
+ *   LAYER 3 — the pre-existing simplex ripple, whose amplitude the body
+ *     passes in reduced (surface life on top of the breath, not
+ *     competing with it).
+ * All three layers multiply by uMotion (1 normal / 0 reduced-motion), so
+ * prefersReducedMotion freezes the body at its exact neutral authored
+ * pose. Non-breath materials get uMotion too (constant 1, never written)
+ * so the ripple line is uniform — their behavior is unchanged.
  */
 export function attachFresnelNoise(material, {
   fresnelColor = 0xffffff,
   fresnelPower = 2.2,
   fresnelIntensity = 0.35,
   noiseAmp = 0.03,
+  breath = false,
+  breathAmp = 0.055,
+  heartAmp = 0.018,
 } = {}) {
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = { value: 0 };
     shader.uniforms.uNoiseAmp = { value: noiseAmp };
+    shader.uniforms.uMotion = { value: 1 };
     shader.uniforms.uFresnelColor = { value: new THREE.Color(fresnelColor) };
     shader.uniforms.uFresnelPower = { value: fresnelPower };
     shader.uniforms.uFresnelIntensity = { value: fresnelIntensity };
+    if (breath) {
+      shader.uniforms.uBreathAmp = { value: breathAmp };
+      shader.uniforms.uHeartAmp = { value: heartAmp };
+    }
+
+    const breathDeclarations = breath ? `
+        attribute float aRamp;
+        attribute float aBreath;
+        uniform float uBreathAmp;
+        uniform float uHeartAmp;
+    ` : '';
+    const breathDisplacement = breath ? `
+        float breathSwell = sin(uTime * 2.28 - aRamp * 1.8) * 0.5 + 0.5;
+        float heartPhase = fract(uTime * 1.515);
+        float lub = exp(-pow((heartPhase - 0.12) * 14.0, 2.0));
+        float dub = exp(-pow((heartPhase - 0.34) * 16.0, 2.0)) * 0.6;
+        float bellyMask = smoothstep(0.15, 0.3, aRamp) * (1.0 - smoothstep(0.42, 0.58, aRamp));
+        transformed += normal * uMotion * aBreath * (breathSwell * uBreathAmp + (lub + dub) * bellyMask * uHeartAmp);
+    ` : '';
 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `
         #include <common>
         uniform float uTime;
         uniform float uNoiseAmp;
+        uniform float uMotion;
+        ${breathDeclarations}
         ${GLSL_SIMPLEX_NOISE}
       `)
       .replace('#include <begin_vertex>', `
         #include <begin_vertex>
         float n = snoise(position * 1.1 + uTime * 0.15);
-        transformed += normal * n * uNoiseAmp;
+        transformed += normal * n * uNoiseAmp * uMotion;
+        ${breathDisplacement}
       `);
 
     shader.fragmentShader = shader.fragmentShader

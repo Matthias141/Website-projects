@@ -220,7 +220,30 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       clearcoat: 0.2,
       clearcoatRoughness: 0.6,
     });
-    return isMobile ? material : attachFresnelNoise(material, { fresnelColor: 0xffffff, fresnelIntensity: 0.15, noiseAmp: 0.015 });
+    // breath: true layers the Stage C breathing/heartbeat displacement
+    // into the same onBeforeCompile injection (no parallel system) —
+    // see fresnelNoise.js for the three layers. noiseAmp is cut from
+    // the 0.015 Stage A value to 0.008 so the pre-existing ripple reads
+    // as surface life on top of the breath, not competing with it.
+    //
+    // SHADOW CAVEAT, handled by amplitude budget rather than a
+    // customDepthMaterial: vertex displacement in onBeforeCompile does
+    // NOT reach the shadow depth pass, so the cast shadow holds the
+    // neutral silhouette while the surface breathes. Total worst-case
+    // displacement at the belly is 0.055 (breath) + 0.018 (heartbeat)
+    // + 0.008 (ripple) ≈ 0.081 units on a 1.3-radius belly (~6%) —
+    // under the soft shadow (radius 3 blur) the mismatch is
+    // imperceptible, which is why the depth-material route wasn't worth
+    // its complexity here. At the collar neck the same budget is
+    // ~0.012 (aBreath ≈ 0.02-0.08 there, heartbeat masked to zero), so
+    // max neck radius ≈ 0.456 vs the ring's 0.49 inner opening — the
+    // body cannot visibly clip through the rigid ring at peak inhale.
+    return isMobile ? material : attachFresnelNoise(material, {
+      fresnelColor: 0xffffff,
+      fresnelIntensity: 0.15,
+      noiseAmp: 0.008,
+      breath: true,
+    });
   }, [isMobile]);
 
   const soulColors = [0xff0044, 0xff6600, 0xffee00, 0x00cc44, 0x0088ff, 0xaa22ff];
@@ -272,6 +295,14 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     // shaderMaterials is filtered to only those that got onBeforeCompile).
     for (const mat of shaderMaterials) {
       if (mat.userData.shader) mat.userData.shader.uniforms.uTime.value = time;
+    }
+
+    // Freeze/unfreeze the body's breathing + heartbeat + ripple at the
+    // neutral pose under reduced motion (uMotion gates all three
+    // displacement layers in the shader — uTime alone keeps advancing,
+    // which is harmless once its terms are multiplied to zero).
+    if (bodyMaterial.userData.shader) {
+      bodyMaterial.userData.shader.uniforms.uMotion.value = prefersReducedMotion ? 0 : 1;
     }
 
     if (!prefersReducedMotion) {
