@@ -187,8 +187,16 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
   // breath shader attach is desktop-only, so the mobile body is the
   // matte gradient form at rest (consistent with mobile skipping every
   // other shader-level effect in this app).
-  const bodyGeometry = useMemo(() => buildOrganicBody({ isMobile }), [isMobile]);
+  const { geometry: bodyGeometry, neckCenter, neckTangent } = useMemo(() => buildOrganicBody({ isMobile }), [isMobile]);
   useEffect(() => () => bodyGeometry.dispose(), [bodyGeometry]);
+  // Collar orientation: torus's hole axis is local Z; quaternion carries
+  // Z onto the spine's tangent at the neck so the ring rings the neck
+  // even though the spine leans, with a small fixed tilt on top so it
+  // reads slipped-on rather than machined-in-place.
+  const collarQuaternion = useMemo(() => {
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), neckTangent);
+    return q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.1, 0, 0.06)));
+  }, [neckTangent]);
   const bodyMaterial = useMemo(() => {
     // vertexColors carries the whole dye gradient (baked per-vertex in
     // organicBody.js); base color stays white so vColor shows true.
@@ -198,14 +206,19 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     // it never replaces <color_vertex>/<color_fragment>, which are the
     // chunks where three multiplies vColor into diffuseColor before
     // lighting, so the two features compose without interference.
+    // Matte SKIN, not glazed ceramic — the first pass's clearcoat sheen
+    // and higher env pickup read as "product photography porcelain,"
+    // which fought the organism read AND contributed white glare on
+    // desktop. Rough, barely-metallic, low env: light lands on the
+    // gradient and stays there.
     const material = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       vertexColors: true,
-      roughness: 0.55,
-      metalness: 0.08,
-      envMapIntensity: 0.55,
-      clearcoat: 0.2,
-      clearcoatRoughness: 0.6,
+      roughness: 0.72,
+      metalness: 0.02,
+      envMapIntensity: 0.35,
+      clearcoat: 0.05,
+      clearcoatRoughness: 0.8,
     });
     // breath: true layers the Stage C breathing/heartbeat displacement
     // into the same onBeforeCompile injection (no parallel system) —
@@ -225,11 +238,24 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
     // ~0.012 (aBreath ≈ 0.02-0.08 there, heartbeat masked to zero), so
     // max neck radius ≈ 0.456 vs the ring's 0.49 inner opening — the
     // body cannot visibly clip through the rigid ring at peak inhale.
+    // Breath/heart amplitudes raised (0.055/0.018 -> 0.09/0.026) per
+    // feedback that the creature didn't read organic enough — the swell
+    // needs to be visible at a glance, not subliminal. Fresnel rim cut
+    // 0.15 -> 0.07: the white rim glow was another "everything has a
+    // white haze" contributor on desktop. Budget recheck at the collar
+    // neck: aBreath ≤ 0.08 there → breath ≤ 0.0072, ripple 0.012, lumps
+    // damped to 0.027 amplitude by the body's LUMP_KEYS profile → max
+    // neck radius ≈ 0.42*1.03 + 0.02 ≈ 0.452, still under the ring's
+    // 0.49 opening. Belly worst case ≈ 0.09+0.026+0.012 = 0.128 (~10%
+    // of belly radius) — bigger shadow-silhouette mismatch than before,
+    // still soft-shadow-masked; flag for on-device confirmation.
     return isMobile ? material : attachFresnelNoise(material, {
       fresnelColor: 0xffffff,
-      fresnelIntensity: 0.15,
-      noiseAmp: 0.008,
+      fresnelIntensity: 0.07,
+      noiseAmp: 0.012,
       breath: true,
+      breathAmp: 0.09,
+      heartAmp: 0.026,
     });
   }, [isMobile]);
 
@@ -364,15 +390,15 @@ export default function Sculpture({ isMobile = false, prefersReducedMotion = fal
       />
 
       {/* Chrome collar — the rigid counterpoint to the breathing body,
-          ringing the neck per the concept images. y=3.05 is the neck's
-          measured minimum (max body radius there 0.444 incl. lump noise);
-          major 0.62 − tube 0.13 leaves a 0.49 inner opening, so the neck
-          clears it even at peak inhale (see the budget note above). The
-          slight X/Z tilt keeps it looking slipped-on rather than
-          machined-in-place. It does NOT breathe: no breath attach on
+          ringing the neck per the concept images. Position/orientation
+          come FROM the geometry build (spine point + tangent at the neck
+          t), not hardcoded numbers — the leaning spine moves the neck,
+          and the collar has to follow it to keep the clearance budget
+          honest (ring opening 0.49 vs breathing neck ≈ 0.45, see the
+          budget note above). It does NOT breathe: no breath attach on
           chromeMaterial, and it rides the god group like everything else. */}
-      <mesh position={[0, 3.05, 0]} rotation={[Math.PI / 2 + 0.1, 0, 0.06]} material={chromeMaterial} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(chromeMaterial)} onPointerOut={onHoverEnd(chromeMaterial)}>
-        <torusGeometry args={[0.62, 0.13, 20, 48]} />
+      <mesh position={neckCenter} quaternion={collarQuaternion} material={chromeMaterial} castShadow={!isMobile} receiveShadow={!isMobile} onPointerOver={onHoverStart(chromeMaterial)} onPointerOut={onHoverEnd(chromeMaterial)}>
+        <torusGeometry args={[0.62, 0.115, 20, 48]} />
       </mesh>
 
       {buckets.map((bucket, bIdx) => bucketCounts[bIdx] > 0 && (

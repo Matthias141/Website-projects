@@ -1,4 +1,4 @@
-import { EffectComposer, Bloom, N8AO } from '@react-three/postprocessing';
+import { EffectComposer, N8AO } from '@react-three/postprocessing';
 
 /**
  * SSR (screen-space-reflections) was removed from this composer entirely —
@@ -20,7 +20,7 @@ import { EffectComposer, Bloom, N8AO } from '@react-three/postprocessing';
  *    throw was enough to lose the WebGL context entirely, which is what
  *    produced a blank white page in production.
  *
- * N8AO + Bloom alone is a complete, safe render. Re-adding SSR needs
+ * N8AO alone is a complete, safe render. Re-adding SSR needs
  * either an upstream fix or a rewrite against the current
  * postprocessing/three APIs — see git history (Effects.jsx before this
  * commit) for the last working-build attempt.
@@ -34,13 +34,12 @@ export default function Effects({ isMobile }) {
   return (
     <EffectComposer multisampling={0}>
       <N8AO aoRadius={1.2} intensity={2} distanceFalloff={1} quality="medium" />
-      {/* Cut further per confirmed-working feedback (0.28/0.4/0.88 ->
-          0.12/0.75/0.6 -> 0.06/0.85/0.45): same direction, pushed harder —
-          threshold up again so bloom triggers on fewer, only the very
-          brightest surfaces, smoothing tightened further so its falloff
-          stays tight around those instead of re-spreading, intensity
-          halved again so even that is subtle. */}
-      <Bloom intensity={0.06} luminanceThreshold={0.85} luminanceSmoothing={0.45} mipmapBlur />
+      {/* Bloom REMOVED entirely (was 0.28 -> 0.12 -> 0.06 across three
+          rounds of "still too much white haze" feedback): after two cuts
+          it still registered as haze on a laptop screen, and at 0.06 it
+          was contributing almost nothing aesthetically — the honest end
+          of that trajectory is deletion, not a fourth nudge. N8AO stays;
+          ambient occlusion adds contrast, the opposite of the problem. */}
     </EffectComposer>
   );
 }

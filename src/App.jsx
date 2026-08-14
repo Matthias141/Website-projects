@@ -104,7 +104,7 @@ export default function App() {
           // already validated separately via on-device phone screenshots
           // earlier in this project and this round of cuts is specifically
           // about how it reads on a laptop screen.
-          toneMappingExposure: isMobile ? 1 : 0.85,
+          toneMappingExposure: isMobile ? 1 : 0.72,
         }}
       >
         <color attach="background" args={[bg]} />
@@ -127,7 +127,7 @@ export default function App() {
             screenshots earlier in this project) and only the desktop path
             gets cut. Scales the whole IBL contribution down in one place
             instead of re-tuning envMapIntensity per material. */}
-        <Environment resolution={256} environmentIntensity={isMobile ? 1 : 0.35}>
+        <Environment resolution={256} environmentIntensity={isMobile ? 1 : 0.25}>
           <primitive object={roomEnvironment} />
         </Environment>
 

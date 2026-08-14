@@ -105,6 +105,10 @@ function loftAlongCurve({
   radialSegments, heightSegments,
   lumpAmp = 0, lumpSeed = 0,
 }) {
+  // lumpAmp may be a number or a function of t — the body passes a
+  // function so flesh-lumpiness can vary along the height (strong on the
+  // belly, damped at the collar neck where silhouette clearance matters).
+  const lumpAmpAt = typeof lumpAmp === 'function' ? lumpAmp : () => lumpAmp;
   const frames = curve.computeFrenetFrames(heightSegments, false);
   const positions = [];
   const uvs = [];
@@ -126,8 +130,15 @@ function loftAlongCurve({
       let rr = r;
       // Organic lumpiness — sampled on the circle's embedding (cos/sin)
       // so the noise field is continuous across the θ = 0 wrap seam.
-      if (lumpAmp) {
-        rr *= 1 + lumpNoise.noise(c * 1.3 + lumpSeed, t * 3.0 + lumpSeed * 2.0, s * 1.3) * lumpAmp;
+      // Two octaves: a low-frequency term that pushes the whole
+      // silhouette asymmetric (one side fuller than the other, like a
+      // grown thing rather than a turned one) plus a finer term for
+      // local flesh lumps.
+      const la = lumpAmpAt(t);
+      if (la) {
+        const coarse = lumpNoise.noise(c * 0.55 + lumpSeed, t * 1.2 + lumpSeed * 2.0, s * 0.55);
+        const fine = lumpNoise.noise(c * 1.9 + lumpSeed * 3.1, t * 4.2 + lumpSeed, s * 1.9);
+        rr *= 1 + (coarse * 1.1 + fine * 0.5) * la;
       }
       positions.push(p.x + (N.x * c + B.x * s) * rr, p.y + (N.y * c + B.y * s) * rr, p.z + (N.z * c + B.z * s) * rr);
       uvs.push(j / R, t);
@@ -186,23 +197,39 @@ export function buildOrganicBody({ isMobile = false } = {}) {
   const radialSegments = isMobile ? 28 : 44;
   const heightSegments = isMobile ? 88 : 144;
 
-  // Vertical spine, y ≈ -1.7 (base contact) → 3.62 (cap top). Control
-  // points bunch together near the top so the wide cap radius plays out
-  // over little height — that vertical compression is what makes the cap
-  // read as a flattened mushroom crown rather than a bulb. Slight x/z
-  // jitter keeps the form asymmetric-organic and the Frenet frames stable.
+  // Spine, y ≈ -1.7 (base contact) → 3.62 (cap top). Control points
+  // bunch together near the top so the wide cap radius plays out over
+  // little height — that vertical compression is what makes the cap read
+  // as a flattened mushroom crown rather than a bulb. The lateral drift
+  // is deliberately larger than jitter: the body leans and recovers like
+  // something that grew toward light, then the cap re-centers — a
+  // machine-straight axis was a big part of why the first pass still
+  // read as "turned on a lathe" rather than grown.
   const spine = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.0, -1.7, 0.0),
-    new THREE.Vector3(0.06, -1.05, 0.04),
-    new THREE.Vector3(-0.07, -0.15, -0.05),
-    new THREE.Vector3(0.05, 0.75, 0.06),
-    new THREE.Vector3(-0.04, 1.55, -0.05),
-    new THREE.Vector3(0.02, 2.25, 0.03),
-    new THREE.Vector3(0.0, 2.85, 0.0),
-    new THREE.Vector3(0.0, 3.25, 0.0),
-    new THREE.Vector3(0.0, 3.5, 0.0),
-    new THREE.Vector3(0.0, 3.62, 0.0),
+    new THREE.Vector3(0.1, -1.05, 0.07),
+    new THREE.Vector3(-0.16, -0.15, -0.11),
+    new THREE.Vector3(0.13, 0.75, 0.12),
+    new THREE.Vector3(-0.1, 1.55, -0.12),
+    new THREE.Vector3(0.05, 2.25, 0.07),
+    new THREE.Vector3(-0.02, 2.85, 0.02),
+    // Cap region sits higher than the first pass (3.25/3.5/3.62 →
+    // 3.42/3.68/3.8): the flare's underside was grazing the top of the
+    // collar tube once the spine leaned and the lumps strengthened —
+    // measured, not guessed (see the solid-torus clearance check in the
+    // rebuild commits). Extra height restores the gap.
+    new THREE.Vector3(0.0, 3.42, 0.0),
+    new THREE.Vector3(0.04, 3.68, -0.03),
+    new THREE.Vector3(0.06, 3.8, -0.04),
   ]);
+
+  // Lumpiness profile: full flesh on belly/cap, damped hard at the
+  // collar neck (t≈0.72) so the silhouette-clearance budget vs the
+  // rigid ring's 0.49 inner opening holds even at the raised amplitude.
+  const LUMP_KEYS = [
+    [0.0, 0.5], [0.15, 1.0], [0.55, 1.0], [0.68, 0.3], [0.76, 0.3],
+    [0.84, 0.8], [1.0, 0.7],
+  ];
 
   const body = loftAlongCurve({
     curve: spine,
@@ -211,7 +238,7 @@ export function buildOrganicBody({ isMobile = false } = {}) {
     breathAt: (t) => rampInterp(BREATH_KEYS, t),
     radialSegments,
     heightSegments,
-    lumpAmp: 0.05,
+    lumpAmp: (t) => 0.09 * rampInterp(LUMP_KEYS, t),
     lumpSeed: 2.3,
   });
 
@@ -302,11 +329,19 @@ export function buildOrganicBody({ isMobile = false } = {}) {
     const jitter = lumpNoise.noise(px * 0.9 + 11.3, py * 0.9, pz * 0.9) * 0.05;
     const t = Math.min(1, Math.max(0, rampAttr.getX(i) + jitter));
     sampleColorRamp(t, c);
-    const mottle = 1 + lumpNoise.noise(px * 2.1, py * 2.1 + 5.7, pz * 2.1) * 0.06;
+    const mottle = 1 + lumpNoise.noise(px * 2.1, py * 2.1 + 5.7, pz * 2.1) * 0.1;
     colors[i * 3] = Math.min(1, c.r * mottle);
     colors[i * 3 + 1] = Math.min(1, c.g * mottle);
     colors[i * 3 + 2] = Math.min(1, c.b * mottle);
   }
   merged.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  return merged;
+
+  // The collar can't live at a hardcoded position anymore — the spine
+  // leans, so the neck's world position is a property of the geometry.
+  // Export it (plus the spine's local tilt there) so Sculpture.jsx
+  // places the ring exactly around the neck it was budgeted against.
+  const neckT = 0.72;
+  const neckCenter = spine.getPoint(neckT);
+  const neckTangent = spine.getTangent(neckT);
+  return { geometry: merged, neckCenter, neckTangent };
 }
